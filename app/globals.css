@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: #0a0b10;
+  --color-card: #161821;
+  --color-card-border: #2a2d3e;
+  --color-primary: #ef4444;
+  --color-secondary: #a855f7;
+  --color-muted: #64748b;
+  --color-accent: #f8fafc;
+  
+  --color-github: #24292f;
+  --color-google: #ffffff;
+  --color-fortytwo: #000000;
+  --color-gitlab: #e24329;
+  --color-discord: #5865f2;
+
+  --font-sans: "Outfit", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0a0b10;
+  --foreground: #f8fafc;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(to right, #ef4444, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, #ef4444 0%, #a855f7 100%);
+  }
+
+  .glass {
+    background: rgba(22, 24, 33, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(42, 45, 62, 0.5);
+  }
 }
