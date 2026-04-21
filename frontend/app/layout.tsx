@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Hypertube brings the power of BitTorrent streaming to your browser. Watch your favorite movies in HD with no ads.",
 };
 
+import { PageTransition } from "@/components/layout/PageTransition";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-white font-sans shrink-0">
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
       </body>
     </html>
   );

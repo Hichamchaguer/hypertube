@@ -6,6 +6,7 @@ import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -13,6 +14,16 @@ interface NavbarProps {
 }
 
 export const Navbar = ({ authenticated = false }: NavbarProps) => {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/dashboard?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <nav className={cn(
       "w-full flex items-center justify-between py-6 px-8 relative transition-all duration-300",
@@ -38,11 +49,13 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
         </>
       ) : (
         <div className="flex items-center gap-6 flex-1 max-w-xl mx-12">
-          <form className="relative w-full" onSubmit={(e) => e.preventDefault()}>
+          <form className="relative w-full" onSubmit={handleSearch}>
             <Input 
               placeholder="Search movies, TV shows..." 
               icon={<Search className="w-4 h-4" />}
               className="h-10 bg-card/30 border-card-border/30"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
           <Link href="/">

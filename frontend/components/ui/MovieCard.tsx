@@ -24,7 +24,7 @@ export const MovieCard = ({ id, title, year, rating, image, watched, className }
 
   return (
     <Link href={`/movie/${id}`} className={cn("group cursor-pointer block", className)}>
-      <div className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-3 border border-card-border/50 group-hover:border-primary/50 transition-colors bg-[#1a1c26]">
+      <div className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-3 border border-card-border/50 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] transition-all duration-300 bg-[#1a1c26]">
         <Image
           src={imgSrc}
           alt={title}

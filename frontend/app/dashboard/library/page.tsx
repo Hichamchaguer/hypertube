@@ -2,11 +2,9 @@ import React from "react";
 import { Library } from "lucide-react";
 import { MovieCard } from "@/components/ui/MovieCard";
 
-const libraryMovies = [
-  { id: "inception", title: "Inception", year: 2010, rating: 8.8, image: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=1000&auto=format&fit=crop" },
-  { id: "interstellar", title: "Interstellar", year: 2014, rating: 8.7, image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1000&auto=format&fit=crop" },
-  { id: "dark-knight", title: "The Dark Knight", year: 2008, rating: 9.1, image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1000&auto=format&fit=crop" },
-];
+import { movies } from "@/lib/movies";
+
+const libraryMovies = movies.filter(m => m.watched);
 
 export default function LibraryPage() {
   return (
@@ -35,7 +33,8 @@ export default function LibraryPage() {
                 title={movie.title}
                 year={movie.year}
                 rating={movie.rating}
-                image={movie.image}
+                image={movie.poster}
+                watched={movie.watched}
               />
             ))}
           </div>
