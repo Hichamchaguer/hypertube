@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, use } from "react";
 import Image from "next/image";
 import { 
   ArrowLeft,
@@ -8,32 +8,36 @@ import {
   Heart, 
   Star, 
   Clock, 
-  Calendar
+  Calendar,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/layout/Navbar";
+import { getMovieById } from "@/lib/movies";
+import { VideoPlayer } from "@/components/video/VideoPlayer";
+import { CommentSection } from "@/components/movie/CommentSection";
 
 const FALLBACK_POSTER = "https://images.unsplash.com/photo-1485090916855-2c262179a76b?q=80&w=1000&auto=format&fit=crop";
 const FALLBACK_BACKDROP = "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1000&auto=format&fit=crop";
 
-const movieData = {
-  title: "F1",
-  year: 2025,
-  duration: "2h 36m",
-  rating: 7.8,
-  genres: ["Action", "Drama"],
-  synopsis: "Racing legend Sonny Hayes is coaxed out of retirement to lead a struggling Formula 1 team—and mentor a young hotshot driver—while chasing one more chance at glory.",
-  directors: ["Joseph Kosinski", "Joseph Kosinski", "Toby Hefferman", "Monika Petrillo", "Zoe Morgan", "Donald E G Bentley", "Kailyn Dabkowski", "Lisa Vick", "Joseph Kosinski"],
-  actors: ["Brad Pitt", "Damson Idris", "Javier Bardem", "Kerry Condon", "Tobias Menzies", "Kim Bodnia", "Sarah Niles"],
-  poster: "https://images.unsplash.com/photo-1541139414902-140306ea4651?q=80&w=1000&auto=format&fit=crop",
-  backdrop: "https://images.unsplash.com/photo-1541139414902-140306ea4651?q=80&w=1000&auto=format&fit=crop"
-};
+export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const movieData = getMovieById(id);
+  
+  const [posterSrc, setPosterSrc] = useState(movieData?.poster || FALLBACK_POSTER);
+  const [backdropSrc, setBackdropSrc] = useState(movieData?.backdrop || FALLBACK_BACKDROP);
+  const [isPlaying, setIsPlaying] = useState(false);
 
-export default function MovieDetailsPage() {
-  const [posterSrc, setPosterSrc] = useState(movieData.poster);
-  const [backdropSrc, setBackdropSrc] = useState(movieData.backdrop);
+  if (!movieData) {
+    return (
+      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white">
+        <h1 className="text-2xl font-bold mb-4">Movie not found</h1>
+        <Link href="/dashboard" className="text-primary hover:underline">Return to Dashboard</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0b10] flex flex-col font-sans">
@@ -110,7 +114,11 @@ export default function MovieDetailsPage() {
                 </div>
 
                 <div className="flex items-center gap-4 pt-4">
-                  <Button size="lg" className="bg-[#ef4444] hover:bg-[#ef4444]/90 text-white font-bold px-10 gap-3 rounded-xl h-14">
+                  <Button 
+                    size="lg" 
+                    className="bg-[#ef4444] hover:bg-[#ef4444]/90 text-white font-bold px-10 gap-3 rounded-xl h-14"
+                    onClick={() => setIsPlaying(true)}
+                  >
                     <Play className="w-5 h-5 fill-white" />
                     Watch Now
                   </Button>
@@ -148,10 +156,37 @@ export default function MovieDetailsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Section Divider */}
+              <div className="w-full h-px bg-white/5 my-16" />
+
+              {/* Community Section */}
+              <CommentSection />
             </div>
           </div>
         </div>
       </main>
+
+      {/* Video Player Modal/Overlay */}
+      {isPlaying && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col animate-in fade-in duration-300">
+          <div className="absolute top-6 left-10 z-[60]">
+            <button 
+              onClick={() => setIsPlaying(false)}
+              className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+                <X className="w-5 h-5" />
+              </div>
+              <span className="font-bold text-sm tracking-widest uppercase">Close Player</span>
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center relative">
+            <VideoPlayer movieTitle={movieData.title} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
