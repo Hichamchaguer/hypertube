@@ -31,7 +31,8 @@ export default function LandingPage() {
                   type="text" 
                   placeholder="Search for movies, TV shows..." 
                   className="w-full h-14 bg-[#1a1c26] border border-white/5 rounded-xl pl-12 pr-4 text-white focus:outline-none focus:border-white/10 transition-all placeholder:text-muted"
-                />
+                /> 
+                
               </div>
               <Link href="/signin">
                 <Button className="h-16 px-10 text-lg font-bold rounded-2xl w-fit mx-auto lg:mx-0 shadow-2xl shadow-primary/20">
