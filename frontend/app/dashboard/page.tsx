@@ -85,7 +85,7 @@ export default function DashboardPage() {
       {/* Main Content Title */}
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
-          Welcome back, <span className="text-gradient">Yassine</span>
+          Welcome back, <span className="text-gradient">Hicham</span>
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>

@@ -43,7 +43,7 @@ export default function SignInPage() {
     setTimeout(() => {
       setIsLoading(false);
       // Save simulated session
-      localStorage.setItem("user", JSON.stringify({ name: "Yassine", username: formData.username || "yassine_hy" }));
+      localStorage.setItem("user", JSON.stringify({ name: "Hicham", username: formData.username || "hchaguer" }));
       router.push("/dashboard");
     }, 1500);
   };
