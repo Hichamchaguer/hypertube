@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Filter, Star, Play, Info } from "lucide-react";
@@ -12,10 +12,10 @@ import { useSearchParams } from "next/navigation";
 
 const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [isLoading, setIsLoading] = React.useState(true);
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
+  const searchQuery = searchParams?.get("search")?.toLowerCase() || "";
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
@@ -91,7 +91,6 @@ export default function DashboardPage() {
       </div>
 
       <div className="space-y-8">
-        {/* ... (Rest of the filtering and grid) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-6 bg-primary rounded-full" />
@@ -136,5 +135,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div>Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

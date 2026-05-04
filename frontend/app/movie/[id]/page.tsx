@@ -32,9 +32,19 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   if (!movieData) {
     return (
-      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white">
-        <h1 className="text-2xl font-bold mb-4">Movie not found</h1>
-        <Link href="/dashboard" className="text-primary hover:underline">Return to Dashboard</Link>
+      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white px-6 text-center">
+        <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center mb-8">
+           <Star className="w-10 h-10 text-rose-500 opacity-20" />
+        </div>
+        <h1 className="text-4xl font-bold mb-4 tracking-tight">Movie Not Found</h1>
+        <p className="text-white/60 max-w-md mb-10 leading-relaxed font-medium">
+          The movie you are looking for doesn&apos;t exist or has been removed from our library.
+        </p>
+        <Link href="/dashboard">
+          <Button size="lg" className="h-14 px-10 rounded-2xl bg-white text-black hover:bg-white/90 font-bold border-none">
+            Return to Dashboard
+          </Button>
+        </Link>
       </div>
     );
   }
