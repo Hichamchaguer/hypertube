@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ht-v21';
+const CACHE_NAME = 'ht-v22';
 const OFFLINE_URL = '/offline.html';
 
 // 🚀 EMBEDDED FALLBACK HTML (Zero-Failure Guarantee)
@@ -16,7 +16,8 @@ const FALLBACK_HTML = `
     .scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px); pointer-events: none; }
     h1 { font-size: clamp(3rem, 10vw, 4.5rem); letter-spacing: 0.04em; margin-bottom: 0.75rem; color: #ef4444; }
     p { font-size: 0.95rem; color: #6b7280; margin-bottom: 2rem; max-width: 400px; line-height: 1.6; }
-    button { background: #ef4444; color: #fff; border: none; padding: 0.8rem 2.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    button { background: #ef4444; color: #fff; border: none; padding: 0.8rem 2.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; width: 220px; display: block; margin: 0.5rem auto; }
+    .secondary-btn { background: transparent; border: 1px solid rgba(239,68,68,0.5); }
     .badge { position: fixed; top: 20px; left: 20px; background: rgba(239,68,68,0.15); color: #ef4444; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid rgba(239,68,68,0.3); }
   </style>
 </head>
@@ -26,15 +27,16 @@ const FALLBACK_HTML = `
   <div class="badge">HYPERTUBE OFFLINE</div>
   <div>
     <h1>NO SIGNAL</h1>
-    <p>Looks like you're offline. Check your internet connection and try again — your content will be waiting for you.</p>
+    <p>Looks like you're offline. Check your internet connection or return to your dashboard.</p>
     <button onclick="location.reload()">Try Again</button>
+    <button onclick="location.href='/dashboard'" class="secondary-btn">Go to Dashboard</button>
   </div>
 </body>
 </html>
 `;
 
 self.addEventListener('install', (e) => {
-  console.log('[SW] v21 Install');
+  console.log('[SW] v22 Install');
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.add(new Request(OFFLINE_URL, { cache: 'reload' })))
   );
@@ -42,7 +44,7 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-  console.log('[SW] v21 Activate');
+  console.log('[SW] v22 Activate');
   e.waitUntil(
     caches.keys().then((keys) => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
@@ -50,11 +52,11 @@ self.addEventListener('activate', (e) => {
 });
 
 async function provideFallback(request) {
-  // 1. Try to find the exact or fuzzy match in cache
+  // 1. Try fuzzy match in cache
   const cached = await caches.match(request, { ignoreSearch: true });
   if (cached) return cached;
 
-  // 2. Otherwise return the embedded fallback HTML
+  // 2. Return the embedded fallback HTML
   return new Response(FALLBACK_HTML, {
     status: 200,
     headers: { 'Content-Type': 'text/html' }
@@ -91,11 +93,9 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
             return response;
           }
-          // Handle 404s/Errors by showing fallback
           return provideFallback(event.request);
         })
         .catch(() => {
-          // Handle Network Errors by showing fallback
           return provideFallback(event.request);
         })
     );
