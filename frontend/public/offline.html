@@ -3,46 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline - Hypertube</title>
+  <title>Offline — Hypertube</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0a0b10;
-      color: #ffffff;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: #0a0b10;
+      color: #f5f5f5;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
-      margin: 0;
+      overflow: hidden;
+      position: relative;
       text-align: center;
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
+
+    .glow {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(239,68,68,0.13) 0%, transparent 65%);
+      pointer-events: none;
     }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.07em;
+      color: #ef4444;
+    }
+
+    .badge {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,0.3);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      max-width: 480px;
+    }
+
+    .icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.75rem;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 4.5rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 span { color: #ef4444; }
+
     p {
-      color: #9ca3af;
+      font-size: 0.95rem;
+      font-weight: 300;
+      color: #6b7280;
+      line-height: 1.75;
       margin-bottom: 2rem;
     }
+
     button {
-      background-color: #ef4444;
-      color: white;
+      background: #ef4444;
+      color: #fff;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 1rem;
+      padding: 0.8rem 2.2rem;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
       cursor: pointer;
-      font-weight: 600;
+      display: block;
+      margin: 0 auto 0.6rem;
     }
-    button:hover {
-      background-color: #dc2626;
+
+    button:hover { background: #dc2626; }
+
+    .hint {
+      font-size: 0.75rem;
+      color: #4b5563;
+      display: block;
+      margin-bottom: 2rem;
     }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-size: 0.7rem;
+      color: #4b5563;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .corner {
+      position: fixed;
+      width: 50px;
+      height: 50px;
+      border-color: rgba(239,68,68,0.18);
+      border-style: solid;
+    }
+    .tl { top: 70px; left: 14px; border-width: 1px 0 0 1px; }
+    .tr { top: 70px; right: 14px; border-width: 1px 1px 0 0; }
+    .bl { bottom: 14px; left: 14px; border-width: 0 0 1px 1px; }
+    .br { bottom: 14px; right: 14px; border-width: 0 1px 1px 0; }
   </style>
 </head>
 <body>
-  <h1>📡 Pas de connexion</h1>
-  <p>Cette page n'est pas encore disponible hors ligne. Veuillez vérifier votre connexion internet.</p>
-  <button onclick="window.location.reload()">Réessayer</button>
+  <div class="glow"></div>
+  <div class="scanlines"></div>
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="topbar">
+    <span class="logo">HYPERTUBE</span>
+    <span class="badge">Offline</span>
+  </div>
+
+  <div class="container">
+    <div class="icon-wrap">
+      <svg width="36" height="30" viewBox="0 0 36 30" fill="none">
+        <rect x="14" y="22" width="8" height="8" rx="4" fill="#ef4444"/>
+        <rect x="9" y="16" width="18" height="4" rx="2" fill="#ef4444" opacity="0.45"/>
+        <rect x="4" y="10" width="28" height="4" rx="2" fill="#ef4444" opacity="0.2"/>
+        <rect x="0" y="4" width="36" height="4" rx="2" fill="#ef4444" opacity="0.08"/>
+      </svg>
+    </div>
+
+    <h1>NO <span>SIGNAL</span></h1>
+
+    <p>Looks like you're offline. Check your internet connection and try again — your content will be waiting for you.</p>
+
+    <button onclick="window.location.reload()">Try Again</button>
+    <span class="hint">or check your network settings</span>
+
+    <div class="status">
+      <div class="dot"></div>
+      Connection lost
+    </div>
+  </div>
 </body>
 </html>

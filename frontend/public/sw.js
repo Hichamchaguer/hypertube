@@ -1,1 +1,119 @@
-if (!self.define) { let e, s = {}; const a = (a, c) => (a = new URL(a + ".js", c).href, s[a] || new Promise(s => { if ("document" in self) { const e = document.createElement("script"); e.src = a, e.onload = s, document.head.appendChild(e) } else e = a, importScripts(a), s() }).then(() => { let e = s[a]; if (!e) throw new Error(`Module ${a} didn’t register its module`); return e })); self.define = (c, i) => { const n = e || ("document" in self ? document.currentScript.src : "") || location.href; if (s[n]) return; let t = {}; const r = e => a(e, n), f = { module: { uri: n }, exports: t, require: r }; s[n] = Promise.all(c.map(e => f[e] || r(e))).then(e => (i(...e), t)) } } define(["./workbox-c31b800f"], function (e) { "use strict"; importScripts("fallback-b53vQKjjCzqh89U0jSEZa.js"), self.skipWaiting(), e.clientsClaim(), e.precacheAndRoute([{ url: "/_next/dynamic-css-manifest.json", revision: "d751713988987e9331980363e24189ce" }, { url: "/_next/static/b53vQKjjCzqh89U0jSEZa/_buildManifest.js", revision: "feb00a391ad49646886c39582b8a8811" }, { url: "/_next/static/b53vQKjjCzqh89U0jSEZa/_ssgManifest.js", revision: "b6652df95db52feb4daf4eca35380933" }, { url: "/_next/static/chunks/283-fbbb931c4b75279e.js", revision: "fbbb931c4b75279e" }, { url: "/_next/static/chunks/335-62e91cc08c7601e9.js", revision: "62e91cc08c7601e9" }, { url: "/_next/static/chunks/437-7711ebe3f9b44c9d.js", revision: "7711ebe3f9b44c9d" }, { url: "/_next/static/chunks/4bd1b696-215e5051988c3dde.js", revision: "215e5051988c3dde" }, { url: "/_next/static/chunks/578-addce7590d4e609d.js", revision: "addce7590d4e609d" }, { url: "/_next/static/chunks/794-3bbf792b9526214d.js", revision: "3bbf792b9526214d" }, { url: "/_next/static/chunks/app/_not-found/page-ccdbc2c31e92e68c.js", revision: "ccdbc2c31e92e68c" }, { url: "/_next/static/chunks/app/dashboard/history/page-7b502daa570ba9a3.js", revision: "7b502daa570ba9a3" }, { url: "/_next/static/chunks/app/dashboard/layout-a1c8405c6f372a27.js", revision: "a1c8405c6f372a27" }, { url: "/_next/static/chunks/app/dashboard/library/page-45fa64634dd76f7a.js", revision: "45fa64634dd76f7a" }, { url: "/_next/static/chunks/app/dashboard/page-f7e4a692056dc606.js", revision: "f7e4a692056dc606" }, { url: "/_next/static/chunks/app/dashboard/profile/page-0bb2ca6f5451c663.js", revision: "0bb2ca6f5451c663" }, { url: "/_next/static/chunks/app/layout-9072ca3c1659b8a2.js", revision: "9072ca3c1659b8a2" }, { url: "/_next/static/chunks/app/movie/%5Bid%5D/page-6c424cbf7d9e3e72.js", revision: "6c424cbf7d9e3e72" }, { url: "/_next/static/chunks/app/page-0bba0511408a7516.js", revision: "0bba0511408a7516" }, { url: "/_next/static/chunks/app/signin/page-e869f9ea516037ab.js", revision: "e869f9ea516037ab" }, { url: "/_next/static/chunks/framework-93cda6578f6c76ec.js", revision: "93cda6578f6c76ec" }, { url: "/_next/static/chunks/main-3ab42bc84323b045.js", revision: "3ab42bc84323b045" }, { url: "/_next/static/chunks/main-app-fa3b0fac05e348d8.js", revision: "fa3b0fac05e348d8" }, { url: "/_next/static/chunks/next/dist/client/components/builtin/forbidden-5ffc9993636a9595.js", revision: "5ffc9993636a9595" }, { url: "/_next/static/chunks/next/dist/client/components/builtin/global-error-8345ec23a34e0959.js", revision: "8345ec23a34e0959" }, { url: "/_next/static/chunks/next/dist/client/components/builtin/not-found-5ffc9993636a9595.js", revision: "5ffc9993636a9595" }, { url: "/_next/static/chunks/next/dist/client/components/builtin/unauthorized-5ffc9993636a9595.js", revision: "5ffc9993636a9595" }, { url: "/_next/static/chunks/pages/_app-688aa0c7241baf30.js", revision: "688aa0c7241baf30" }, { url: "/_next/static/chunks/pages/_error-f411f14ffbabb959.js", revision: "f411f14ffbabb959" }, { url: "/_next/static/chunks/pages/_offline-2683e9ed019b43ec.js", revision: "2683e9ed019b43ec" }, { url: "/_next/static/chunks/polyfills-42372ed130431b0a.js", revision: "846118c33b2c0e922d7b3a7676f81f6f" }, { url: "/_next/static/chunks/webpack-62f86e37662ab124.js", revision: "62f86e37662ab124" }, { url: "/_next/static/css/432e9bc556355a83.css", revision: "432e9bc556355a83" }, { url: "/_next/static/media/7b0b24f36b1a6d0b-s.p.woff2", revision: "98ccc2b7f18991a5126a91ac56fbb1fc" }, { url: "/_next/static/media/98848575513c9742-s.woff2", revision: "e2b64ddcb351dbe7397e0da426a8c8d6" }, { url: "/_offline", revision: "b53vQKjjCzqh89U0jSEZa" }, { url: "/file.svg", revision: "d09f95206c3fa0bb9bd9fefabfd0ea71" }, { url: "/globe.svg", revision: "2aaafa6a49b6563925fe440891e32717" }, { url: "/icons/icon-192x192.png", revision: "4dd996af74614080a6bf8f5249d0054f" }, { url: "/icons/icon-512x512.png", revision: "4dd996af74614080a6bf8f5249d0054f" }, { url: "/manifest.json", revision: "2ec454fdadf57cc7fd1353edac5b5936" }, { url: "/next.svg", revision: "8e061864f388b47f33a1c3780831193e" }, { url: "/vercel.svg", revision: "c0af2f507b369b085b35ef4bbe3bcf1e" }, { url: "/window.svg", revision: "a2760511c65806022ad20adf74370ff3" }], { ignoreURLParametersMatching: [] }), e.cleanupOutdatedCaches(), e.registerRoute("/", new e.NetworkFirst({ cacheName: "start-url", plugins: [{ cacheWillUpdate: async ({ request: e, response: s, event: a, state: c }) => s && "opaqueredirect" === s.type ? new Response(s.body, { status: 200, statusText: "OK", headers: s.headers }) : s }, { handlerDidError: async ({ request: e }) => self.fallback(e) }] }), "GET"), e.registerRoute(({ request: e }) => "navigate" === e.mode, new e.NetworkFirst({ cacheName: "pages-cache", plugins: [new e.ExpirationPlugin({ maxEntries: 50 }), { handlerDidError: async ({ request: e }) => self.fallback(e) }] }), "GET") });
+const CACHE_NAME = 'ht-v21';
+const OFFLINE_URL = '/offline.html';
+
+// 🚀 EMBEDDED FALLBACK HTML (Zero-Failure Guarantee)
+const FALLBACK_HTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline — Hypertube</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0a0b10; color: #f5f5f5; min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; }
+    .glow { position: fixed; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(239,68,68,0.13) 0%, transparent 65%); pointer-events: none; }
+    .scanlines { position: fixed; inset: 0; background: repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px); pointer-events: none; }
+    h1 { font-size: clamp(3rem, 10vw, 4.5rem); letter-spacing: 0.04em; margin-bottom: 0.75rem; color: #ef4444; }
+    p { font-size: 0.95rem; color: #6b7280; margin-bottom: 2rem; max-width: 400px; line-height: 1.6; }
+    button { background: #ef4444; color: #fff; border: none; padding: 0.8rem 2.2rem; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .badge { position: fixed; top: 20px; left: 20px; background: rgba(239,68,68,0.15); color: #ef4444; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; border: 1px solid rgba(239,68,68,0.3); }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="scanlines"></div>
+  <div class="badge">HYPERTUBE OFFLINE</div>
+  <div>
+    <h1>NO SIGNAL</h1>
+    <p>Looks like you're offline. Check your internet connection and try again — your content will be waiting for you.</p>
+    <button onclick="location.reload()">Try Again</button>
+  </div>
+</body>
+</html>
+`;
+
+self.addEventListener('install', (e) => {
+  console.log('[SW] v21 Install');
+  e.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add(new Request(OFFLINE_URL, { cache: 'reload' })))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (e) => {
+  console.log('[SW] v21 Activate');
+  e.waitUntil(
+    caches.keys().then((keys) => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+async function provideFallback(request) {
+  // 1. Try to find the exact or fuzzy match in cache
+  const cached = await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
+
+  // 2. Otherwise return the embedded fallback HTML
+  return new Response(FALLBACK_HTML, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html' }
+  });
+}
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
+    if (url.hostname.includes('fonts.googleapis.com') || url.hostname.includes('fonts.gstatic.com')) {
+      event.respondWith(
+        caches.match(event.request).then((cached) => {
+          return cached || fetch(event.request).catch(() => new Response('', { status: 404 }));
+        })
+      );
+    }
+    return;
+  }
+
+  const isPageRequest = event.request.mode === 'navigate' || 
+                        event.request.headers.get('accept')?.includes('text/html') ||
+                        url.searchParams.has('_rsc') || 
+                        event.request.headers.get('RSC');
+
+  // 🔥 Pages & Next.js Data
+  if (isPageRequest || !url.pathname.includes('.')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+            return response;
+          }
+          // Handle 404s/Errors by showing fallback
+          return provideFallback(event.request);
+        })
+        .catch(() => {
+          // Handle Network Errors by showing fallback
+          return provideFallback(event.request);
+        })
+    );
+    return;
+  }
+
+  // 📦 Static Assets
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => new Response('offline', { status: 503 }));
+    })
+  );
+});
