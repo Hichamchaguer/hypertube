@@ -40,7 +40,6 @@ export const Sidebar = () => {
               src="https://api.dicebear.com/7.x/avataaars/svg?seed=Yassine" 
               alt="Avatar" 
               fill 
-              unoptimized
               className="object-cover"
             />
           </div>
