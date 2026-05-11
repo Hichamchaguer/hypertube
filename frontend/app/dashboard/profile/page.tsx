@@ -10,10 +10,10 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: "Yassine",
-    lastName: "Hac",
-    username: "ybel-hac",
-    email: "yassine@hypertube.com"
+    firstName: "Hicham",
+    lastName: "chaguer",
+    username: "hchaguer",
+    email: "hicham@hypertube.com"
   });
 
   const handleSave = () => {

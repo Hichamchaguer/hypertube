@@ -37,14 +37,14 @@ export const Sidebar = () => {
         <div className="bg-card/50 rounded-2xl p-3 border border-card-border/50 flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
             <Image 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Yassine" 
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hicham" 
               alt="Avatar" 
               fill 
               className="object-cover"
             />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">ybel-hac</p>
+            <p className="text-sm font-bold text-white">hchaguer</p>
           </div>
         </div>
       </div>

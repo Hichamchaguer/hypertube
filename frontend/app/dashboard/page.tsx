@@ -99,7 +99,11 @@ export default function DashboardPage() {
 
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
+<<<<<<< HEAD
           Welcome back, <span className="text-gradient">{userName}</span>
+=======
+          Welcome back, <span className="text-gradient">Hicham</span>
+>>>>>>> backend
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>
