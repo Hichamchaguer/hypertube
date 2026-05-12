@@ -8,6 +8,7 @@ import { Input } from "../ui/Input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import api from "@/api/axios";
 
 interface NavbarProps {
   authenticated?: boolean;
@@ -19,16 +20,26 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const [isAuth, setIsAuth] = React.useState(authenticated);
 
   React.useEffect(() => {
-    // If not explicitly authenticated via prop, check localStorage
+    // If not explicitly authenticated via prop, try to fetch user session
     if (!authenticated) {
-      const user = localStorage.getItem("user");
-      if (user) setIsAuth(true);
+      if (localStorage.getItem("user")) {
+         setIsAuth(true);
+      } else {
+         api.get("/user")
+           .then(() => setIsAuth(true))
+           .catch(() => setIsAuth(false));
+      }
     } else {
       setIsAuth(true);
     }
   }, [authenticated]);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    try {
+      await api.post("/logout");
+    } catch(err) {
+      console.error("Logout failed", err);
+    }
     localStorage.removeItem("user");
     setIsAuth(false);
     router.push("/signin");

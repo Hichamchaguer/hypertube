@@ -23,9 +23,12 @@ routes.post('/register', async (req: any, res: any) => {
         res.send(await user.save());
         console.log(User)
     }
-    catch (err) {
+    catch (err: any) {
         console.error('Error creating user:', err);
-        res.status(500).json({ error: 'Error creating user' });
+        if (err.code === 11000) {
+            return res.status(400).json({ message: 'Username or email already exists.' });
+        }
+        res.status(500).json({ message: 'Internal server error while creating user.' });
     }
 });
 

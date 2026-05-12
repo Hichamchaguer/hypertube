@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
 import { movies } from "@/lib/movies";
 import { useSearchParams, useRouter } from "next/navigation";
+import api from "@/api/axios";
 
 const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
 
@@ -21,21 +22,22 @@ export default function DashboardPage() {
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (!userStr) {
-      router.push("/signin");
-      return;
-    }
-    
-    try {
-      const user = JSON.parse(userStr);
-      if (user.name) setUserName(user.name);
-    } catch (e) {
-      console.error("Failed to parse user session", e);
-    }
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/user");
+        if (response.data?.firstName) {
+          setUserName(response.data.firstName);
+        } else if (response.data?.username) {
+          setUserName(response.data.username);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch user session", error);
+        router.push("/signin");
+      }
+    };
 
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
+    fetchUser();
   }, [router]);
 
   // Pick a featured movie (e.g., The Dark Knight)
@@ -99,11 +101,7 @@ export default function DashboardPage() {
 
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
-<<<<<<< HEAD
           Welcome back, <span className="text-gradient">{userName}</span>
-=======
-          Welcome back, <span className="text-gradient">Hicham</span>
->>>>>>> backend
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>
