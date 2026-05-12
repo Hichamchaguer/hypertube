@@ -63,7 +63,7 @@ const googleCallBack = [ passport.authenticate('google',
                 secure: false, // for http false and for https true
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
             });
-            return res.redirect('/api/profile');
+            return res.redirect('http://localhost:3000/dashboard');
         }
         catch (err) {
             res.status(500).json({ error: 'Authentication failed' });
