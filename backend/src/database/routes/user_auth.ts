@@ -2,6 +2,7 @@ import router from 'express';
 import User from '../models/user';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { authMiddleware } from '../../authMiddleware';
 
 const routes = router.Router();
 
@@ -35,8 +36,7 @@ routes.post('/login', async (req: any, res: any) => {
     try {
         const user = await User.findOne({ username: req.body.username });
         console.log('>>>>> User:', user);
-        if (!user) {
-            console.log('User not found:', req.body.username);
+        if (!user || !user.password) {
             return res.status(404).send({ error: 'Invalid username or password 1' });
         }
 
@@ -84,12 +84,12 @@ routes.post('/logout', (req: any, res: any) => {
     res.send({ message: 'Logout successful' });
 });
 
-routes.get('/profile', async (req: any, res: any) => {
+routes.get('/profile' , authMiddleware, async (req: any, res: any) => {
 
-        try {
-                const users = await User.find();
-                res.send({ message: users.map((u: any) => u.username) });
-        }
+    try {
+            const users = await User.find();
+            res.send({ message: users });
+        }   
         catch (err) {
             console.error('Error fetching users:', err);
             res.status(500).json({ error: 'Error fetching users' });
