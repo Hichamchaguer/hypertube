@@ -18,7 +18,7 @@ const app = express();
 app.use(cookieParser());
 app.use(cors({
   credentials: true,
-  origin: ['*']
+  origin: 'http://localhost:3000'
 }));
 
 app.use(passport.initialize());

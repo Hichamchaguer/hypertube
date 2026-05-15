@@ -25,15 +25,6 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col gap-6 pt-4 max-w-md mx-auto lg:mx-0">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted group-focus-within:text-white transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder="Search for movies, TV shows..." 
-                  className="w-full h-14 bg-[#1a1c26] border border-white/5 rounded-xl pl-12 pr-4 text-white focus:outline-none focus:border-white/10 transition-all placeholder:text-muted"
-                /> 
-                
-              </div>
               <Link href="/signin">
                 <Button className="h-16 px-10 text-lg font-bold rounded-2xl w-fit mx-auto lg:mx-0 shadow-2xl shadow-primary/20">
                   Start Watching Free

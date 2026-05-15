@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   BarChart3, 
   History, 
@@ -24,6 +24,12 @@ const navItems = [
 
 export const Sidebar = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = () => {
+    localStorage.removeItem("user");
+    router.push("/signin");
+  };
 
   return (
     <aside className="w-64 h-screen border-r border-card-border/50 bg-[#0a0b10] flex flex-col pt-8 pb-6 sticky top-0">
@@ -65,12 +71,14 @@ export const Sidebar = () => {
       </nav>
 
       <div className="px-4 mt-auto">
-        <Link href="/">
-          <Button variant="ghost" className="w-full justify-start gap-3 hover:text-red-500 transition-colors">
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Sign Out</span>
-          </Button>
-        </Link>
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-3 hover:text-red-500 transition-colors"
+          onClick={handleSignOut}
+        >
+          <LogOut className="w-5 h-5" />
+          <span className="font-medium">Sign Out</span>
+        </Button>
       </div>
     </aside>
   );

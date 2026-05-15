@@ -8,20 +8,37 @@ import { MovieCard } from "@/components/ui/MovieCard";
 import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
 import { movies } from "@/lib/movies";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import api from "@/api/axios";
 
 const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
 
 function DashboardContent() {
   const [isLoading, setIsLoading] = React.useState(true);
+  const [userName, setUserName] = React.useState("Yassine");
+  const router = useRouter(); 
   const searchParams = useSearchParams();
   const searchQuery = searchParams?.get("search")?.toLowerCase() || "";
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/user");
+        if (response.data?.firstName) {
+          setUserName(response.data.firstName);
+        } else if (response.data?.username) {
+          setUserName(response.data.username);
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch user session", error);
+        router.push("/signin");
+      }
+    };
+
+    fetchUser();
+  }, [router]);
 
   // Pick a featured movie (e.g., The Dark Knight)
   const featuredMovie = movies.find(m => m.id === "dark-knight") || movies[0];
@@ -82,10 +99,9 @@ function DashboardContent() {
         </section>
       )}
 
-      {/* Main Content Title */}
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
-          Welcome back, <span className="text-gradient">Hicham</span>
+          Welcome back, <span className="text-gradient">{userName}</span>
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>

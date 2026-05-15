@@ -8,6 +8,7 @@ import { Input } from "../ui/Input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import api from "@/api/axios";
 
 interface NavbarProps {
   authenticated?: boolean;
@@ -16,6 +17,33 @@ interface NavbarProps {
 export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [isAuth, setIsAuth] = React.useState(authenticated);
+
+  React.useEffect(() => {
+    // If not explicitly authenticated via prop, try to fetch user session
+    if (!authenticated) {
+      if (localStorage.getItem("user")) {
+         setIsAuth(true);
+      } else {
+         api.get("/user")
+           .then(() => setIsAuth(true))
+           .catch(() => setIsAuth(false));
+      }
+    } else {
+      setIsAuth(true);
+    }
+  }, [authenticated]);
+
+  const handleSignOut = async () => {
+    try {
+      await api.post("/logout");
+    } catch(err) {
+      console.error("Logout failed", err);
+    }
+    localStorage.removeItem("user");
+    setIsAuth(false);
+    router.push("/signin");
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +55,11 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
   return (
     <nav className={cn(
       "w-full flex items-center justify-between py-6 px-8 relative transition-all duration-300",
-      authenticated ? "bg-transparent" : "max-w-7xl mx-auto"
+      isAuth ? "bg-transparent" : "max-w-7xl mx-auto"
     )}>
       <Logo />
 
-      {!authenticated ? (
+      {!isAuth ? (
         <>
           <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-6">
             <Link href="/" className="text-sm font-medium text-muted hover:text-white transition-colors">Home</Link>
@@ -42,7 +70,7 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
           </div>
           <div className="flex items-center gap-4">
             <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Log In</Link>
-            <Link href="/signin">
+            <Link href="/signup">
               <Button variant="primary" size="sm" className="px-6 rounded-lg font-bold">Sign Up</Button>
             </Link>
           </div>
@@ -58,12 +86,15 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-          <Link href="/">
-            <Button variant="primary" size="sm" className="bg-red-600/90 hover:bg-red-600 shadow-red-600/20 gap-2 shrink-0">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="bg-red-600/90 hover:bg-red-600 shadow-red-600/20 gap-2 shrink-0 border-none"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </Button>
         </div>
       )}
     </nav>
