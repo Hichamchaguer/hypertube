@@ -8,7 +8,7 @@ export const authMiddleware = (req: any, res: any, next: any) => {
             message: "Not authenticated"
         });
     }
-
+    
     try {
         const decoded = jwt.verify(
             token,
