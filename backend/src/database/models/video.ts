@@ -5,11 +5,19 @@ import { title } from "node:process";
 
 const videoSchema = new mongoose.Schema({
 
+    tmdbId: { type: Number, required: true, unique: true },
     title: { type: String, required: true },
-    description: { type: String, required: true },
-    streamURL: { type: String, required: true },
-    thumbnailURL: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
+    year: { type: String },
+    duration: { type: Number },
+    rating: { type: Number },
+    genres : [ { type: String } ],
+    synopsis: { type: String },
+    directors: [ { type: String } ],
+    actors: [ { name: String, character: String, profile: String } ],
+    poster: { type: String },
+    backdrop: { type: String },
+    trailer: { type: String },
+    watched: { type: Boolean, default: false },
 });
 
 const Video = mongoose.model("Video", videoSchema);

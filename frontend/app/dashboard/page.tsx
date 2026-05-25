@@ -7,15 +7,51 @@ import { ChevronDown, Filter, Star, Play, Info } from "lucide-react";
 import { MovieCard } from "@/components/ui/MovieCard";
 import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
-import { movies } from "@/lib/movies";
 import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/api/axios";
 
-const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
+const genres = ["All", "Adventure", "Animation", "Comedy", "Crime", "Drama", "Sci-Fi"];
+
+const FALLBACK_HERO_IMAGE = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop";
+
+const tmdbGenreMap: Record<number, string> = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  10765: "Sci-Fi",
+  878: "Sci-Fi",
+};
+
+interface Movie {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  genres: string[];
+  synopsis: string;
+  poster: string;
+  backdrop: string;
+  watched?: boolean;
+}
+
+interface ApiMovie {
+  id: number;
+  title?: string;
+  year?: string;
+  rating?: number;
+  genres?: number[];
+  synopsis?: string;
+  poster?: string | null;
+  backdrop?: string | null;
+}
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [userName, setUserName] = React.useState("Yassine");
+  const [movies, setMovies] = React.useState<Movie[]>([]);
+  const [userName, setUserName] = React.useState("");
   const router = useRouter(); 
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
@@ -30,34 +66,55 @@ export default function DashboardPage() {
         } else if (response.data?.username) {
           setUserName(response.data.username);
         }
-        setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch user session", error);
         router.push("/signin");
       }
     };
 
+    const fetchMovies = async () => {
+      try {
+        const response = await api.get<{ results: ApiMovie[] }>("/movies");
+        const rawMovies = response.data?.results || [];
+        const mappedMovies: Movie[] = rawMovies.map((movie) => {
+          const genres = (movie.genres || [])
+            .map((id) => tmdbGenreMap[id])
+            .filter(Boolean) as string[];
+
+          return {
+            id: String(movie.id),
+            title: movie.title || "Untitled",
+            year: Number(movie.year) || 0,
+            rating: typeof movie.rating === "number" ? movie.rating : 0,
+            genres,
+            synopsis: movie.synopsis || "No synopsis available.",
+            poster: movie.poster || "",
+            backdrop: movie.backdrop || "",
+          };
+        });
+
+        setMovies(mappedMovies);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch movies", error);
+        setIsLoading(false);
+      }
+    };
+
     fetchUser();
+    fetchMovies();
   }, [router]);
 
-  // Pick a featured movie (e.g., The Dark Knight)
-  const featuredMovie = movies.find(m => m.id === "dark-knight") || movies[0];
-
-  const filteredMovies = movies.filter(movie => {
-    const matchesGenre = selectedGenre === "All" || movie.genres.includes(selectedGenre);
-    const matchesSearch = !searchQuery || 
-      movie.title.toLowerCase().includes(searchQuery) || 
-      movie.genres.some(g => g.toLowerCase().includes(searchQuery));
-    return matchesGenre && matchesSearch;
-  });
+  const featuredMovie = movies[0];
+  const featuredBackdrop = featuredMovie?.poster || FALLBACK_HERO_IMAGE;
 
   return (
     <div className="space-y-12 pb-12">
       {/* Cinematic Hero Section */}
-      {!searchQuery && selectedGenre === "All" && (
+      {!searchQuery && selectedGenre === "All" && featuredMovie && (
         <section className="relative h-[60vh] min-h-[450px] w-full rounded-[2.5rem] overflow-hidden group shadow-2xl">
           <Image 
-            src={featuredMovie.backdrop} 
+            src={featuredBackdrop} 
             alt="Hero Background" 
             fill 
             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -137,7 +194,7 @@ export default function DashboardPage() {
                <MovieCardSkeleton key={idx} />
             ))
           ) : (
-            filteredMovies.map((movie, idx) => (
+            movies.map((movie, idx) => (
               <MovieCard 
                 key={idx}
                 id={movie.id}
@@ -145,7 +202,9 @@ export default function DashboardPage() {
                 year={movie.year}
                 rating={movie.rating}
                 image={movie.poster}
-                watched={movie.watched}
+                genres={movie.genres}
+                backdrop={movie.backdrop}
+                synopsis={movie.synopsis}
               />
             ))
           )}

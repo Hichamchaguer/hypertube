@@ -12,18 +12,36 @@ interface MovieCardProps {
   title: string;
   year: number;
   rating: number;
-  image: string;
+  image?: string;
+  genres?: string[];
+  poster?: string;
+  backdrop?: string;
+  synopsis?: string;
   watched?: boolean;
   className?: string;
 }
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1485846234645-a62644ef7467?q=80&w=1000&auto=format&fit=crop";
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop"
 
-export const MovieCard = ({ id, title, year, rating, image, watched, className }: MovieCardProps) => {
-  const [imgSrc, setImgSrc] = useState(image || FALLBACK_IMAGE);
+export const MovieCard = ({
+  id,
+  title,
+  year,
+  rating,
+  image,
+  genres,
+  poster,
+  backdrop,
+  synopsis,
+  watched,
+  className,
+}: MovieCardProps) => {
+
+  // console.log(id, title);
+  const [imgSrc, setImgSrc] = useState(image || poster || FALLBACK_IMAGE);
 
   return (
-    <Link href={`/movie/${id}`} className={cn("group cursor-pointer block", className)}>
+    <Link href={`/movies/${id}`} className={cn("group cursor-pointer block", className)}>
       <div className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-3 border border-card-border/50 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] transition-all duration-300 bg-[#1a1c26]">
         <Image
           src={imgSrc}
@@ -56,7 +74,19 @@ export const MovieCard = ({ id, title, year, rating, image, watched, className }
         <h3 className="font-semibold text-white truncate group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <p className="text-xs text-muted mt-1">{year}</p>
+        <p className="text-xs text-muted mt-1">
+          {year}
+        </p>
+        {genres && genres.length > 0 && (
+          <p className="text-[10px] text-muted/80 mt-1 truncate">
+            {genres.join(" • ")}
+          </p>
+        )}
+        {synopsis && (
+          <p className="text-[10px] text-muted/70 mt-1 line-clamp-2">
+            {synopsis}
+          </p>
+        )}
       </div>
     </Link>
   );

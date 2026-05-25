@@ -34,6 +34,10 @@ export default function LibraryPage() {
                 year={movie.year}
                 rating={movie.rating}
                 image={movie.poster}
+                genres={movie.genres}
+                poster={movie.poster}
+                backdrop={movie.backdrop}
+                synopsis={movie.synopsis}
                 watched={movie.watched}
               />
             ))}
