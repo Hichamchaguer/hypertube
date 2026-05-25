@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import { 
   ArrowLeft,
   Play, 
   Heart, 
   Star, 
-  Clock, 
   Calendar,
   X
 } from "lucide-react";
@@ -15,20 +14,101 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/layout/Navbar";
-import { getMovieById } from "@/lib/movies";
+import api from "@/api/axios";
 import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { CommentSection } from "@/components/movie/CommentSection";
 
 const FALLBACK_POSTER = "https://images.unsplash.com/photo-1485090916855-2c262179a76b?q=80&w=1000&auto=format&fit=crop";
 const FALLBACK_BACKDROP = "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1000&auto=format&fit=crop";
 
+const tmdbGenreMap: Record<number, string> = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  10765: "Sci-Fi",
+  878: "Sci-Fi",
+};
+
+interface ApiMovie {
+  id: number;
+  title?: string;
+  year?: string;
+  rating?: number;
+  genres?: Array<number | string>;
+  synopsis?: string;
+  poster?: string | null;
+  backdrop?: string | null;
+}
+
+interface MovieDetails {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  genres: string[];
+  synopsis: string;
+  poster: string;
+  backdrop: string;
+}
+
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const movieData = getMovieById(id);
-  
-  const [posterSrc, setPosterSrc] = useState(movieData?.poster || FALLBACK_POSTER);
-  const [backdropSrc, setBackdropSrc] = useState(movieData?.backdrop || FALLBACK_BACKDROP);
+  const [movieData, setMovieData] = useState<MovieDetails | null>(null);
+  const [posterSrc, setPosterSrc] = useState(FALLBACK_POSTER);
+  const [backdropSrc, setBackdropSrc] = useState(FALLBACK_BACKDROP);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      try {
+        const response = await api.get<ApiMovie>(`/movies/${id}`);
+        const movie = response.data;
+        const genres = (movie.genres || [])
+          .map((genre) => {
+            if (typeof genre === "string") {
+              return genre;
+            }
+            return tmdbGenreMap[genre];
+          })
+          .filter(Boolean) as string[];
+        console.log("Fetched movie data:", genres);
+
+        const resolvedMovie: MovieDetails = {
+          id: String(movie.id),
+          title: movie.title || "Untitled",
+          year: Number(movie.year) || 0,
+          rating: typeof movie.rating === "number" ? movie.rating : 0,
+          genres,
+          synopsis: movie.synopsis || "No synopsis available.",
+          poster: movie.poster || FALLBACK_POSTER,
+          backdrop: movie.backdrop || movie.poster || FALLBACK_BACKDROP,
+        };
+
+        setMovieData(resolvedMovie);
+        setPosterSrc(resolvedMovie.poster || FALLBACK_POSTER);
+        setBackdropSrc(resolvedMovie.backdrop || FALLBACK_BACKDROP);
+      } catch (error) {
+        console.error("Failed to fetch movie details", error);
+        setMovieData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMovie();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white">
+        <p className="text-sm font-semibold text-white/70">Loading movie...</p>
+      </div>
+    );
+  }
 
   if (!movieData) {
     return (
@@ -95,10 +175,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                     <Calendar className="w-4 h-4 text-white/60" />
                     <span className="text-sm">{movieData.year}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/80 font-medium">
-                    <Clock className="w-4 h-4 text-white/60" />
-                    <span className="text-sm">{movieData.duration}</span>
-                  </div>
                   <Badge variant="rating" className="bg-[#22c55e] text-white border-transparent px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-sm font-bold">
                     <Star className="w-3.5 h-3.5 fill-current" />
                     {movieData.rating}
@@ -106,11 +182,17 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {movieData.genres.map((genre) => (
-                    <Badge key={genre} className="bg-[#1a1c26] text-white/90 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
-                      {genre}
+                  {movieData.genres.length > 0 ? (
+                    movieData.genres.map((genre) => (
+                      <Badge key={genre} className="bg-[#1a1c26] text-white/90 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
+                        {genre}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge className="bg-[#1a1c26] text-white/70 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
+                      Unlisted Genre
                     </Badge>
-                  ))}
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4 pt-4">
@@ -135,26 +217,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 <p className="text-white/70 leading-relaxed text-base max-w-3xl">
                   {movieData.synopsis}
                 </p>
-              </div>
-
-              {/* Cast & Crew Section */}
-              <div className="space-y-8">
-                <h2 className="text-2xl font-bold text-white tracking-tight">Cast & Crew</h2>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Directors</h3>
-                    <p className="text-white/80 leading-relaxed text-sm">
-                      {movieData.directors.join(", ")}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Actors</h3>
-                    <p className="text-white/80 leading-relaxed text-sm">
-                      {movieData.actors.join(", ")}
-                    </p>
-                  </div>
-                </div>
               </div>
 
               {/* Section Divider */}

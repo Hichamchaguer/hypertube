@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { fetchUser } from "@/api/services/getData";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   BarChart3, 
@@ -25,6 +26,28 @@ const navItems = [
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const [userName, setUserName] = React.useState({
+    username: "",
+    profilePicture: ''
+  });
+
+  React.useEffect(() => {
+    const getUser = async () => {
+      try {
+        const userData = await fetchUser();
+        console.log("Fetched user data:", userData); // Debug log
+        setUserName(userData);
+        if (!userData) {
+          router.push("/signin");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        router.push("/signin");
+      }
+    };
+
+    getUser();
+  }, [router]);
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
@@ -37,14 +60,14 @@ export const Sidebar = () => {
         <div className="bg-card/50 rounded-2xl p-3 border border-card-border/50 flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
             <Image 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hicham" 
+              src={userName.profilePicture || "/default-avatar.png"} 
               alt="Avatar" 
               fill 
               className="object-cover"
             />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">hchaguer</p>
+            <p className="text-sm font-bold text-white">{userName.username}</p>
           </div>
         </div>
       </div>

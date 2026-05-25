@@ -8,7 +8,7 @@ import { MovieCard } from "@/components/ui/MovieCard";
 import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
 import { useSearchParams, useRouter } from "next/navigation";
-import api from "@/api/axios";
+import { fetchUser, fetchMovies } from "@/api/services/getData";
 
 const genres = ["All", "Adventure", "Animation", "Comedy", "Crime", "Drama", "Sci-Fi"];
 
@@ -58,13 +58,11 @@ export default function DashboardPage() {
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
-    const fetchUser = async () => {
+    const getUser = async () => {
       try {
-        const response = await api.get("/user");
-        if (response.data?.firstName) {
-          setUserName(response.data.firstName);
-        } else if (response.data?.username) {
-          setUserName(response.data.username);
+        const response = await fetchUser();
+        if (response.firstName || response.username) {
+          setUserName(response.firstName || response.username);
         }
       } catch (error) {
         console.error("Failed to fetch user session", error);
@@ -72,13 +70,12 @@ export default function DashboardPage() {
       }
     };
 
-    const fetchMovies = async () => {
+    const getMovies = async () => {
       try {
-        const response = await api.get<{ results: ApiMovie[] }>("/movies");
-        const rawMovies = response.data?.results || [];
-        const mappedMovies: Movie[] = rawMovies.map((movie) => {
+        const response = await fetchMovies();
+        const mappedMovies: Movie[] = response.map((movie:any) => {
           const genres = (movie.genres || [])
-            .map((id) => tmdbGenreMap[id])
+            .map((id:any) => tmdbGenreMap[id])
             .filter(Boolean) as string[];
 
           return {
@@ -95,14 +92,14 @@ export default function DashboardPage() {
 
         setMovies(mappedMovies);
         setIsLoading(false);
-      } catch (error) {
+    } catch (error) {
         console.error("Failed to fetch movies", error);
         setIsLoading(false);
       }
     };
 
-    fetchUser();
-    fetchMovies();
+    getUser();
+    getMovies();
   }, [router]);
 
   const featuredMovie = movies[0];
@@ -113,10 +110,10 @@ export default function DashboardPage() {
       {/* Cinematic Hero Section */}
       {!searchQuery && selectedGenre === "All" && featuredMovie && (
         <section className="relative h-[60vh] min-h-[450px] w-full rounded-[2.5rem] overflow-hidden group shadow-2xl">
-          <Image 
-            src={featuredBackdrop} 
-            alt="Hero Background" 
-            fill 
+          <Image
+            src={featuredBackdrop}
+            alt="Hero Background"
+            fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b10] via-[#0a0b10]/60 to-transparent" />

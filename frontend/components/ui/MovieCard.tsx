@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Play, CheckCircle2 } from "lucide-react";
@@ -21,7 +21,7 @@ interface MovieCardProps {
   className?: string;
 }
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop"
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop";
 
 export const MovieCard = ({
   id,
@@ -37,11 +37,17 @@ export const MovieCard = ({
   className,
 }: MovieCardProps) => {
 
-  // console.log(id, title);
-  const [imgSrc, setImgSrc] = useState(image || poster || FALLBACK_IMAGE);
+  const resolvedImage = [image, poster, backdrop, FALLBACK_IMAGE].find(
+    (source) => typeof source === "string" && source.trim().length > 0
+  ) as string;
+  const [imgSrc, setImgSrc] = useState(resolvedImage);
+
+  useEffect(() => {
+    setImgSrc(resolvedImage);
+  }, [resolvedImage]);
 
   return (
-    <Link href={`/movies/${id}`} className={cn("group cursor-pointer block", className)}>
+    <Link href={`/movie/${id}`} className={cn("group cursor-pointer block", className)}>
       <div className="relative aspect-[2/3] rounded-2xl overflow-hidden mb-3 border border-card-border/50 group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] transition-all duration-300 bg-[#1a1c26]">
         <Image
           src={imgSrc}
