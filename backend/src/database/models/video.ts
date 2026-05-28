@@ -6,6 +6,7 @@ import { title } from "node:process";
 const videoSchema = new mongoose.Schema({
 
     tmdbId: { type: Number, required: true, unique: true },
+    imdbId: { type: String },
     title: { type: String, required: true },
     year: { type: String },
     duration: { type: Number },
@@ -18,6 +19,7 @@ const videoSchema = new mongoose.Schema({
     backdrop: { type: String },
     trailer: { type: String },
     watched: { type: Boolean, default: false },
+    torrents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Torrent' }],
 });
 
 const Video = mongoose.model("Video", videoSchema);

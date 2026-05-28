@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Filter, Star, Play, Info } from "lucide-react";
@@ -48,7 +48,7 @@ interface ApiMovie {
   backdrop?: string | null;
 }
 
-export default function DashboardPage() {
+const DashboardContent = () => {
   const [isLoading, setIsLoading] = React.useState(true);
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [userName, setUserName] = React.useState("");
@@ -73,9 +73,14 @@ export default function DashboardPage() {
     const getMovies = async () => {
       try {
         const response = await fetchMovies();
-        const mappedMovies: Movie[] = response.map((movie:any) => {
+        const mappedMovies: Movie[] = response.map((movie: ApiMovie) => {
           const genres = (movie.genres || [])
-            .map((id:any) => tmdbGenreMap[id])
+            .map((genre) => {
+              if (typeof genre === "string") {
+                return genre;
+              }
+              return tmdbGenreMap[genre];
+            })
             .filter(Boolean) as string[];
 
           return {
@@ -111,9 +116,9 @@ export default function DashboardPage() {
       {!searchQuery && selectedGenre === "All" && featuredMovie && (
         <section className="relative h-[60vh] min-h-[450px] w-full rounded-[2.5rem] overflow-hidden group shadow-2xl">
           <Image
-            src={featuredBackdrop}
-            alt="Hero Background"
-            fill
+            src={featuredBackdrop} 
+            alt="Hero Background" 
+            fill 
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0a0b10] via-[#0a0b10]/60 to-transparent" />
@@ -208,5 +213,15 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={<div className="text-white/60 text-sm">Loading dashboard...</div>}
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

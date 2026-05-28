@@ -7,16 +7,16 @@ import {
   Play, 
   Heart, 
   Star, 
-  Calendar,
-  X
+  Calendar
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/layout/Navbar";
 import api from "@/api/axios";
-import { VideoPlayer } from "@/components/video/VideoPlayer";
 import { CommentSection } from "@/components/movie/CommentSection";
+import { fetchAvailableQualities } from "@/api/services/getData";
 
 const FALLBACK_POSTER = "https://images.unsplash.com/photo-1485090916855-2c262179a76b?q=80&w=1000&auto=format&fit=crop";
 const FALLBACK_BACKDROP = "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1000&auto=format&fit=crop";
@@ -34,6 +34,7 @@ const tmdbGenreMap: Record<number, string> = {
 
 interface ApiMovie {
   id: number;
+  imdbId?: string | null;
   title?: string;
   year?: string;
   rating?: number;
@@ -45,6 +46,7 @@ interface ApiMovie {
 
 interface MovieDetails {
   id: string;
+  imdbId?: string | null;
   title: string;
   year: number;
   rating: number;
@@ -56,11 +58,13 @@ interface MovieDetails {
 
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [movieData, setMovieData] = useState<MovieDetails | null>(null);
   const [posterSrc, setPosterSrc] = useState(FALLBACK_POSTER);
   const [backdropSrc, setBackdropSrc] = useState(FALLBACK_BACKDROP);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -79,6 +83,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
         const resolvedMovie: MovieDetails = {
           id: String(movie.id),
+          imdbId: movie.imdbId ?? null,
           title: movie.title || "Untitled",
           year: Number(movie.year) || 0,
           rating: typeof movie.rating === "number" ? movie.rating : 0,
@@ -199,10 +204,38 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   <Button 
                     size="lg" 
                     className="bg-[#ef4444] hover:bg-[#ef4444]/90 text-white font-bold px-10 gap-3 rounded-xl h-14"
-                    onClick={() => setIsPlaying(true)}
+                    onClick={async () => {
+                      setLaunchError(null);
+                      setIsLaunching(true);
+                      try {
+                        const imdbId = movieData.imdbId || movieData.id;
+                        const qualities = await fetchAvailableQualities(imdbId);
+                        if (!qualities.length) {
+                          throw new Error("No qualities available");
+                        }
+                        const sorted = [...qualities].sort((a, b) => {
+                          const first = parseInt(a.replace("p", ""), 10);
+                          const second = parseInt(b.replace("p", ""), 10);
+                          return second - first;
+                        });
+                        const preferred = sorted.find((item) => item === "720p");
+                        const quality = preferred || sorted[0];
+                        const params = new URLSearchParams({
+                          imdbId,
+                          quality,
+                          title: movieData.title,
+                        });
+                        router.push(`/player?${params.toString()}`);
+                      } catch (error: any) {
+                        setLaunchError(error?.message || "Failed to launch player");
+                      } finally {
+                        setIsLaunching(false);
+                      }
+                    }}
+                    disabled={isLaunching}
                   >
                     <Play className="w-5 h-5 fill-white" />
-                    Watch Now
+                    {isLaunching ? "Loading..." : "Watch Now"}
                   </Button>
                   <Button variant="outline" size="lg" className="bg-[#1a1c26] hover:bg-[#1a1c26]/80 text-white font-bold px-10 gap-3 rounded-xl h-14 border-white/5">
                     <Heart className="w-5 h-5" />
@@ -210,6 +243,10 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                   </Button>
                 </div>
               </div>
+
+              {launchError && (
+                <p className="text-sm text-red-400 font-semibold">{launchError}</p>
+              )}
 
               {/* Synopsis Section */}
               <div className="space-y-4">
@@ -228,27 +265,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
       </main>
-
-      {/* Video Player Modal/Overlay */}
-      {isPlaying && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col animate-in fade-in duration-300">
-          <div className="absolute top-6 left-10 z-[60]">
-            <button 
-              onClick={() => setIsPlaying(false)}
-              className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors"
-            >
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
-                <X className="w-5 h-5" />
-              </div>
-              <span className="font-bold text-sm tracking-widest uppercase">Close Player</span>
-            </button>
-          </div>
-
-          <div className="flex-1 flex items-center justify-center relative">
-            <VideoPlayer movieTitle={movieData.title} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

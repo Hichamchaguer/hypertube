@@ -12,16 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isLoggedIn = void 0;
 const express_1 = __importDefault(require("express"));
 const user_1 = __importDefault(require("../models/user"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const authMiddleware_1 = require("../../authMiddleware");
 const routes = express_1.default.Router();
-const isLoggedIn = (req, res, next) => {
-    req.user ? next() : res.sendStatus(401);
-};
-exports.isLoggedIn = isLoggedIn;
 routes.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const salt = yield bcryptjs_1.default.genSalt(10);
@@ -38,7 +34,10 @@ routes.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
     catch (err) {
         console.error('Error creating user:', err);
-        res.status(500).json({ error: 'Error creating user' });
+        if (err.code === 11000) {
+            return res.status(400).json({ message: 'Username or email already exists.' });
+        }
+        res.status(500).json({ message: 'Internal server error while creating user.' });
     }
 }));
 // login via jwt 
@@ -88,10 +87,10 @@ routes.post('/logout', (req, res) => {
     res.cookie('jwt', '', { maxAge: 0 });
     res.send({ message: 'Logout successful' });
 });
-routes.get('/profile', exports.isLoggedIn, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+routes.get('/profile', authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield user_1.default.find();
-        res.send({ message: users.map((u) => u.username) });
+        res.send({ message: users });
     }
     catch (err) {
         console.error('Error fetching users:', err);
