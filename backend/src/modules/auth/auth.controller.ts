@@ -36,7 +36,7 @@ export const currentUser = async (req: Request, res: Response) => {
     const token = req.cookies?.jwt as string | undefined;
     const user = await getUserFromToken(token);
     if (!user) {
-      return res.send({ user: 'Unauthenticated' });
+      return res.status(401).json({ error: 'Unauthenticated' });
     }
     return res.send(user);
   } catch (err) {

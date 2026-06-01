@@ -18,19 +18,28 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isAuth, setIsAuth] = React.useState(authenticated);
+  const [isLoading, setIsLoading] = React.useState(!authenticated);
 
   React.useEffect(() => {
     // If not explicitly authenticated via prop, try to fetch user session
     if (!authenticated) {
       if (localStorage.getItem("user")) {
          setIsAuth(true);
+         setIsLoading(false);
       } else {
          api.get("/user")
-           .then(() => setIsAuth(true))
-           .catch(() => setIsAuth(false));
+           .then(() => {
+             setIsAuth(true);
+             setIsLoading(false);
+           })
+           .catch(() => {
+             setIsAuth(false);
+             setIsLoading(false);
+           });
       }
     } else {
       setIsAuth(true);
+      setIsLoading(false);
     }
   }, [authenticated]);
 
@@ -52,6 +61,15 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <nav className="w-full flex items-center justify-between py-6 px-8 transition-all duration-300 max-w-7xl mx-auto">
+        <Logo />
+        <div className="w-20" /> {/* Placeholder */}
+      </nav>
+    );
+  }
+
   return (
     <nav className={cn(
       "w-full flex items-center justify-between py-6 px-8 relative transition-all duration-300",
@@ -69,7 +87,7 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
             <Link href="/dashboard/profile" className="text-sm font-medium text-muted hover:text-white transition-colors">Profile</Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Log In</Link>
+            <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Sign In</Link>
             <Link href="/signup">
               <Button variant="primary" size="sm" className="px-6 rounded-lg font-bold">Sign Up</Button>
             </Link>

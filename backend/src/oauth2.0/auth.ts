@@ -46,7 +46,8 @@ passport.use(new GoogleStrategy({
 const googleAuth = passport.authenticate('google',
 {
     scope: ['profile', 'email'],
-    session: false
+    session: false,
+    prompt: 'select_account'
 });
 
 const googleCallBack = [ passport.authenticate('google',
