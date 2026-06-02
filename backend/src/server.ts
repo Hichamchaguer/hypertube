@@ -27,9 +27,11 @@ const frontendOrigins = (process.env.FRONTEND_ORIGINS || 'http://localhost:3000'
 app.use(cors({
   credentials: true,
   origin: (origin, callback) => {
+    console.log('CORS request from origin:', origin);
     if (!origin || frontendOrigins.includes(origin)) {
       return callback(null, true);
     }
+    console.log('CORS rejected for origin:', origin);
     return callback(new Error(`Origin ${origin} not allowed by CORS`));
   },
 }));
