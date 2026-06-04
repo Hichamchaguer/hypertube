@@ -65,6 +65,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const [isLoading, setIsLoading] = useState(true);
   const [isLaunching, setIsLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -104,8 +107,37 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
       }
     };
 
+    const checkFavoriteStatus = async () => {
+      try {
+        const response = await api.get("/library");
+        const favorites = response.data;
+        const exists = favorites.some((fav: any) => 
+          fav.movie?.tmdbId === Number(id) || fav.movie?.imdbId === id
+        );
+        setIsFavorite(exists);
+      } catch (error) {
+        console.error("Failed to check favorite status", error);
+      }
+    };
+
     fetchMovie();
+    checkFavoriteStatus();
   }, [id]);
+
+  const handleToggleFavorite = async () => {
+    if (!movieData || isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    try {
+      const response = await api.post("/library/toggle", { movieId: id });
+      setIsFavorite(response.data.action === "added");
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -237,10 +269,17 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                     <Play className="w-5 h-5 fill-white" />
                     {isLaunching ? "Loading..." : "Watch Now"}
                   </Button>
-                  <Button variant="outline" size="lg" className="bg-[#1a1c26] hover:bg-[#1a1c26]/80 text-white font-bold px-10 gap-3 rounded-xl h-14 border-white/5">
-                    <Heart className="w-5 h-5" />
-                    Add to Favorites
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className={`bg-[#1a1c26] hover:bg-[#1a1c26]/80 text-white font-bold px-10 gap-3 rounded-xl h-14 border-white/5 transition-all ${isFavorite ? 'ring-2 ring-primary bg-primary/10' : ''}`}
+                    onClick={handleToggleFavorite}
+                    disabled={isTogglingFavorite}
+                  >
+                    <Heart className={`w-5 h-5 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+                    {isTogglingFavorite ? "Processing..." : (isFavorite ? "Saved to Library" : "Add to Favorites")}
                   </Button>
+
                 </div>
               </div>
 

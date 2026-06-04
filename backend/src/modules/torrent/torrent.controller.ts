@@ -7,6 +7,7 @@ import {
   getStreamPlaylist,
   streamFile,
 } from './torrent.service';
+import { addToHistory } from '../history/history.service';
 
 export const startStream = async (req: Request, res: Response) => {
   try {
@@ -15,6 +16,15 @@ export const startStream = async (req: Request, res: Response) => {
     if (!movieId || !quality) {
       return res.status(400).json({ error: 'Movie id and quality are required' });
     }
+
+    // Record in history if user is authenticated
+    const userId = (req as any).user?.id;
+    if (userId) {
+      addToHistory(userId, movieId).catch(err => 
+        console.error('Failed to record history asynchronously:', err)
+      );
+    }
+
     const response = await createStream(movieId, quality);
     return res.json(response);
   } catch (err: any) {

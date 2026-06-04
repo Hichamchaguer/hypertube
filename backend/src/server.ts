@@ -10,6 +10,9 @@ import moviesRoutes from './modules/movies/movies.routes';
 import torrentRoutes from './modules/torrent/torrent.routes';
 import usersRoutes from './modules/users/users.routes';
 import commentsRoutes from './modules/comments/comments.routes';
+import historyRoutes from './modules/history/history.routes';
+import libraryRoutes from './modules/library/library.routes';
+
 
 mongoose.connect('mongodb://localhost:27017/hypertube_server').then(() => {
   console.log('Connected to MongoDB');
@@ -42,6 +45,9 @@ app.use(express.json());
 
 // User authentication routes
 app.use('/api', authRoutes);
+app.use('/api', historyRoutes);
+app.use('/api', libraryRoutes);
+
 app.get('/auth/google', googleAuth);
 app.get('/google/callback', googleCallBack);
 

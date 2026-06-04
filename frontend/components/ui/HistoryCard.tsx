@@ -17,7 +17,7 @@ interface HistoryCardProps {
   className?: string;
 }
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1485090916855-2c262179a76b?q=80&w=1000&auto=format&fit=crop";
+const FALLBACK_IMAGE = "https://image.tmdb.org/t/p/w500/wwemzKWzjKYJFfCei707Xez7VpE.jpg";
 
 export const HistoryCard = ({ 
   id,
@@ -29,7 +29,12 @@ export const HistoryCard = ({
   description, 
   className 
 }: HistoryCardProps) => {
-  const [imgSrc, setImgSrc] = useState(image || FALLBACK_IMAGE);
+  const [imgSrc, setImgSrc] = useState<string>(FALLBACK_IMAGE);
+
+  React.useEffect(() => {
+    setImgSrc(image && image !== "" ? image : FALLBACK_IMAGE);
+  }, [image]);
+
 
   return (
     <Link 
@@ -40,12 +45,19 @@ export const HistoryCard = ({
       )}
     >
       {/* Poster */}
-      <div className="relative w-[130px] shrink-0 aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-[#1a1c26]">
+      <div 
+        className="relative w-[130px] shrink-0 aspect-[2/3] rounded-xl overflow-hidden shadow-2xl border border-white/5 bg-[#1a1c26] transition-transform duration-500 group-hover:scale-105"
+        style={{
+          backgroundImage: `url(${FALLBACK_IMAGE})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
         <Image
           src={imgSrc}
-          alt={title}
+          alt="" 
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          className="object-cover transition-opacity duration-500"
           onError={() => setImgSrc(FALLBACK_IMAGE)}
           unoptimized={imgSrc.startsWith('http')}
         />

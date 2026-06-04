@@ -51,3 +51,13 @@ export const startTorrentStream = async (imdbId: string, quality: string) => {
         throw new Error(`Failed to start stream for ${imdbId}`);
     }
 };
+
+export const fetchWatchHistory = async () => {
+    try {
+        const response = await api.get("/history");
+        return response.data;
+    } catch (error) {
+        console.error("Failed to fetch watch history", error);
+        throw new Error("Failed to fetch watch history");
+    }
+};

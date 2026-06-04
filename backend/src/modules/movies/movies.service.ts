@@ -30,8 +30,8 @@ export const fetchPopularMovies = async () => {
     title: movie.title,
     year: movie.release_date?.split('-')[0],
     rating: movie.vote_average,
-    poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-    backdrop: `https://image.tmdb.org/t/p/original${movie.backdrop_path}`,
+    poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+    backdrop: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
     synopsis: movie.overview,
     genres: movie.genre_ids,
   }));
@@ -61,9 +61,9 @@ export const fetchMovieById = async (id: string) => {
     rating: movie.vote_average,
     genres: movie.genres.map((g: any) => g.name),
     synopsis: movie.overview,
-    runtime: movie.runtime,
-    poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-    backdrop: `https://image.tmdb.org/t/p/original${movie.backdrop_path}`,
+    runtime: movie.runtime || 0,
+    poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+    backdrop: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
     directors: movie.credits.crew
       .filter((c: any) => c.job === 'Director')
       .map((d: any) => d.name),
@@ -90,7 +90,7 @@ export const searchMovies = async (query: string) => {
   return response.data.results.map((movie: any) => ({
     id: movie.id,
     title: movie.title,
-    poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+    poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
     year: movie.release_date?.split('-')[0],
   }));
 };

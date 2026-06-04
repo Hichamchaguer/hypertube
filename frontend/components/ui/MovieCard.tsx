@@ -71,9 +71,10 @@ export const MovieCard = ({
         
         <div className="absolute top-3 right-3">
           <Badge variant="rating" className="bg-black/60 backdrop-blur-md">
-            {rating.toFixed(1)}
+            {(rating || 0).toFixed(1)}
           </Badge>
         </div>
+
       </div>
       
       <div className="px-1">
