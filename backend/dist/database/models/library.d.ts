@@ -1,20 +1,20 @@
 import mongoose from "mongoose";
 declare const Library: mongoose.Model<{
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 }, {}, {}, {
     id: string;
 }, mongoose.Document<unknown, {}, {
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 }, {
     id: string;
 }, mongoose.DefaultSchemaOptions> & Omit<{
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -22,19 +22,19 @@ declare const Library: mongoose.Model<{
 }, "id"> & {
     id: string;
 }, mongoose.Schema<any, mongoose.Model<any, any, any, any, any, any, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions, {
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 }, mongoose.Document<unknown, {}, {
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 }, {
     id: string;
 }, mongoose.DefaultSchemaOptions> & Omit<{
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
@@ -42,17 +42,17 @@ declare const Library: mongoose.Model<{
 }, "id"> & {
     id: string;
 }, unknown, {
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {
     __v: number;
 }>, {
-    watchAt: NativeDate;
-    user_id?: mongoose.Types.ObjectId | null;
-    video_id?: mongoose.Types.ObjectId | null;
+    user_id: mongoose.Types.ObjectId;
+    video_id: mongoose.Types.ObjectId;
+    addedAt: NativeDate;
 } & {
     _id: mongoose.Types.ObjectId;
 } & {

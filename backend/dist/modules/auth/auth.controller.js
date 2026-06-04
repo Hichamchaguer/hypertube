@@ -49,7 +49,7 @@ const currentUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.jwt;
         const user = yield (0, auth_service_1.getUserFromToken)(token);
         if (!user) {
-            return res.send({ user: 'Unauthenticated' });
+            return res.status(401).json({ error: 'Unauthenticated' });
         }
         return res.send(user);
     }

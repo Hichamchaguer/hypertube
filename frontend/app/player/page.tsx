@@ -11,6 +11,8 @@ const PlayerContent = () => {
   const imdbId = searchParams.get("imdbId")?.trim() || "";
   const quality = searchParams.get("quality")?.trim() || "";
   const title = searchParams.get("title")?.trim() || "";
+  const runtimeParam = searchParams.get("runtime")?.trim() || "";
+  const runtime = Number(runtimeParam) || 0;
 
   if (!imdbId || !quality) {
     return (
@@ -41,7 +43,7 @@ const PlayerContent = () => {
           >
             ← Back to details
           </button>
-          <VideoPlayer imdbId={imdbId} quality={quality} movieTitle={title} />
+          <VideoPlayer imdbId={imdbId} quality={quality} movieTitle={title} runtime={runtime} />
         </div>
       </main>
     </div>

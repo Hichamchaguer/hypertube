@@ -8,7 +8,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -38,7 +38,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -68,7 +68,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -102,7 +102,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -130,7 +130,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -160,7 +160,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -194,7 +194,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;
@@ -226,7 +226,7 @@ declare const Video: mongoose.Model<{
         name?: string | null;
         character?: string | null;
         profile?: string | null;
-    }, mongoose.Types.Subdocument<mongoose.mongo.BSON.ObjectId, unknown, {
+    }, mongoose.Types.Subdocument<mongoose.mongo.ObjectId, unknown, {
         name?: string | null;
         character?: string | null;
         profile?: string | null;

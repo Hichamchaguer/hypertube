@@ -52,7 +52,8 @@ passport_1.default.use(new GoogleStrategy({
 })));
 const googleAuth = passport_1.default.authenticate('google', {
     scope: ['profile', 'email'],
-    session: false
+    session: false,
+    prompt: 'select_account'
 });
 const googleCallBack = [passport_1.default.authenticate('google', {
         session: false,

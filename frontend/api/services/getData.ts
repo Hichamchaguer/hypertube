@@ -60,4 +60,4 @@ export const fetchWatchHistory = async () => {
         console.error("Failed to fetch watch history", error);
         throw new Error("Failed to fetch watch history");
     }
-};
+};

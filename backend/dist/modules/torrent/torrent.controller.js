@@ -12,12 +12,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.listQualities = exports.getSegment = exports.getPlaylist = exports.startStream = void 0;
 const fs_1 = require("fs");
 const torrent_service_1 = require("./torrent.service");
+const history_service_1 = require("../history/history.service");
 const startStream = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const movieId = String(req.params.movieId || '').trim();
         const quality = String(req.params.quality || '').trim();
         if (!movieId || !quality) {
             return res.status(400).json({ error: 'Movie id and quality are required' });
+        }
+        // Record in history if user is authenticated
+        const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.id;
+        if (userId) {
+            (0, history_service_1.addToHistory)(userId, movieId).catch(err => console.error('Failed to record history asynchronously:', err));
         }
         const response = yield (0, torrent_service_1.createStream)(movieId, quality);
         return res.json(response);

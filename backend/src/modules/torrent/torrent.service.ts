@@ -9,6 +9,7 @@ import parseTorrent from 'parse-torrent';
 import { scrapTorrentLinks, TorrentCandidate } from './helpers/scrapTorrentLinks';
 import Video from '../../database/models/video';
 import Torrent from '../../database/models/torrent';
+import { fetchMovieDetailsById } from '../movies/movies.service';
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -26,82 +27,60 @@ interface TorrentMeta extends TorrentCandidate {
   _id?: string;
 }
 
-const createTmdbClient = () => {
-  const baseURL = process.env.TMDB_BASE_URL;
-  const apiKey = process.env.TMDB_API_KEY;
-
-  if (!baseURL || !apiKey) {
-    throw new Error('TMDB_BASE_URL or TMDB_API_KEY is not defined in environment');
-  }
-
-  return axios.create({
-    baseURL,
-    params: {
-      api_key: apiKey,
-    },
-  });
-};
-
-const isImdbId = (movieId: string) => /^tt\d+$/i.test(movieId);
-
-const resolveMovieIds = async (movieId: string) => {
-  const tmdb = createTmdbClient();
-  if (isImdbId(movieId)) {
-    const response = await tmdb.get(`/find/${movieId}`, {
-      params: {
-        external_source: 'imdb_id',
-      },
-    });
-
-    const result = response.data?.movie_results?.[0];
-    if (!result?.id) {
-      throw new Error('TMDB movie not found for IMDb id');
-    }
-
-    return {
-      tmdbId: String(result.id),
-      imdbId: movieId,
-    };
-  }
-
-  return {
-    tmdbId: movieId,
-    imdbId: null as string | null,
-  };
-};
+const buildVideoPayload = (movieInfo: any) => ({
+  tmdbId: Number(movieInfo.tmdbId ?? movieInfo.id),
+  imdbId: movieInfo.imdbId || undefined,
+  title: movieInfo.title,
+  year: movieInfo.year || '',
+  duration: movieInfo.runtime || 0,
+  rating: movieInfo.rating ?? 0,
+  genres: movieInfo.genres || [],
+  synopsis: movieInfo.synopsis || '',
+  poster: movieInfo.poster || null,
+  backdrop: movieInfo.backdrop || null,
+  directors: movieInfo.directors || [],
+  actors: movieInfo.actors || [],
+  trailer: movieInfo.trailer || null,
+});
 
 const getMovieInfo = async (movieId: string) => {
-  const tmdb = createTmdbClient();
-  const { tmdbId, imdbId } = await resolveMovieIds(movieId);
-  const response = await tmdb.get(`/movie/${tmdbId}`, {
-    params: {
-      append_to_response: 'external_ids',
-    },
-  });
-  const movie = response.data;
+  const movieDetails = await fetchMovieDetailsById(movieId);
   return {
-    tmdbId,
-    imdbId: movie.external_ids?.imdb_id || imdbId,
-    title: movie.title,
-    year: parseInt(movie.release_date?.split('-')[0] || '0', 10),
+    tmdbId: movieDetails.tmdbId ?? String(movieDetails.id),
+    imdbId: movieDetails.imdbId,
+    title: movieDetails.title,
+    year: parseInt(movieDetails.year || '0', 10),
+    details: movieDetails,
   };
 };
 
 const getOrCreateTorrents = async (movieId: string) => {
   const movieInfo = await getMovieInfo(movieId);
+  const payload = buildVideoPayload(movieInfo.details);
 
   let video = await Video.findOne({ tmdbId: Number(movieInfo.tmdbId) });
   if (!video) {
     video = await Video.create({
-      tmdbId: Number(movieInfo.tmdbId),
-      imdbId: movieInfo.imdbId || undefined,
-      title: movieInfo.title,
-      year: String(movieInfo.year || ''),
+      ...payload,
       watched: false,
     });
-  } else if (!video.imdbId && movieInfo.imdbId) {
-    video.imdbId = movieInfo.imdbId;
-    await video.save();
+  } else {
+    const shouldUpdate =
+      (!video.imdbId && payload.imdbId) ||
+      !video.synopsis ||
+      !video.poster ||
+      !video.backdrop ||
+      !video.genres?.length ||
+      !video.directors?.length ||
+      !video.actors?.length ||
+      !video.trailer ||
+      !video.duration ||
+      !video.rating;
+
+    if (shouldUpdate) {
+      Object.assign(video, payload);
+      await video.save();
+    }
   }
 
   const existingTorrents = await Torrent.find({ movie_id: video._id });
@@ -334,6 +313,89 @@ const createTorrentEngine = async (
   });
 };
 
+// const startHlsConversion = async (
+//   torrent: TorrentMeta,
+//   videoFile: any,
+//   hlsDir: string,
+//   movieId: string,
+// ) => {
+//   return new Promise<string>(async (resolve, reject) => {
+//     const hlsFullDir = join(process.cwd(), hlsDir);
+//     try {
+//       await fs.promises.mkdir(hlsFullDir, { recursive: true });
+//     } catch (err) {
+//       return reject(err);
+//     }
+
+//   const playlistPath = join(hlsFullDir, 'playlist.m3u8');
+//   const playlistRelativePath = join(hlsDir, 'playlist.m3u8');
+//     const segmentPattern = join(hlsFullDir, 'segment_%03d.ts');
+
+//     const videoStream = videoFile.createReadStream();
+//     const fileExtension = extname(videoFile.name);
+//     let ffmpegCommand: ffmpeg.FfmpegCommand;
+
+//     if (fileExtension === '.mp4') {
+//       ffmpegCommand = ffmpeg(videoStream)
+//         .addOptions([
+//           '-c copy',
+//           '-f hls',
+//           '-hls_time 4',
+//           '-hls_list_size 0',
+//           '-hls_flags independent_segments',
+//           '-hls_segment_filename',
+//           segmentPattern,
+//         ])
+//         .output(playlistPath);
+//     } else {
+//       ffmpegCommand = getFFmpegMkvConversionCommand(
+//         videoStream,
+//         segmentPattern,
+//         playlistPath,
+//       );
+//     }
+
+//     ffmpegCommand.on('start', async () => {
+//       torrent.downloadStatus = 'downloading';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//     });
+
+//     ffmpegCommand.on('progress', () => {
+//   resolve(playlistRelativePath);
+//     });
+
+//     ffmpegCommand.on('end', async () => {
+//       torrent.downloadStatus = 'completed';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//     });
+
+//     ffmpegCommand.on('error', async (err: Error) => {
+//       await fs.promises.rm(hlsFullDir, { recursive: true, force: true });
+//       torrent.hlsPlaylistPath = null;
+//       torrent.downloadStatus = 'not_started';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           hlsPlaylistPath: torrent.hlsPlaylistPath,
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//       reject(err);
+//     });
+
+//     ffmpegCommand.run();
+//   });
+// };
+
+// Replace the startHlsConversion function in torrent.service.ts
+
 const startHlsConversion = async (
   torrent: TorrentMeta,
   videoFile: any,
@@ -348,13 +410,15 @@ const startHlsConversion = async (
       return reject(err);
     }
 
-  const playlistPath = join(hlsFullDir, 'playlist.m3u8');
-  const playlistRelativePath = join(hlsDir, 'playlist.m3u8');
+    const playlistPath = join(hlsFullDir, 'playlist.m3u8');
+    const playlistRelativePath = join(hlsDir, 'playlist.m3u8');
     const segmentPattern = join(hlsFullDir, 'segment_%03d.ts');
 
     const videoStream = videoFile.createReadStream();
     const fileExtension = extname(videoFile.name);
     let ffmpegCommand: ffmpeg.FfmpegCommand;
+    
+    let isResolved = false; // Track if we've already resolved
 
     if (fileExtension === '.mp4') {
       ffmpegCommand = ffmpeg(videoStream)
@@ -362,8 +426,10 @@ const startHlsConversion = async (
           '-c copy',
           '-f hls',
           '-hls_time 4',
-          '-hls_list_size 0',
-          '-hls_flags independent_segments',
+          '-hls_list_size 0',  // Keep all segments in playlist
+          '-hls_flags independent_segments+program_date_time',
+          '-hls_segment_type mpegts',
+          '-hls_playlist_type vod',  // Change from 'event' to 'vod' if you know total duration
           '-hls_segment_filename',
           segmentPattern,
         ])
@@ -385,20 +451,36 @@ const startHlsConversion = async (
       }
     });
 
-    ffmpegCommand.on('progress', () => {
-  resolve(playlistRelativePath);
+    ffmpegCommand.on('progress', (progress) => {
+      console.log(`FFmpeg progress: ${progress.percent}% done`);
+      
+      // Only resolve after we have at least 10 segments (40 seconds) OR 5% of expected duration
+      // But don't resolve immediately at first progress event
+      if (!isResolved && progress.percent && progress.percent > 5) {
+        isResolved = true;
+        console.log(`Resolving playlist after ${progress.percent}% conversion`);
+        resolve(playlistRelativePath);
+      }
     });
 
     ffmpegCommand.on('end', async () => {
+      console.log('FFmpeg conversion completed');
       torrent.downloadStatus = 'completed';
       if (torrent._id) {
         await Torrent.findByIdAndUpdate(torrent._id, {
           downloadStatus: torrent.downloadStatus,
         });
       }
+      
+      // If we haven't resolved yet (e.g., if conversion was very fast), resolve now
+      if (!isResolved) {
+        isResolved = true;
+        resolve(playlistRelativePath);
+      }
     });
 
     ffmpegCommand.on('error', async (err: Error) => {
+      console.error('FFmpeg error:', err);
       await fs.promises.rm(hlsFullDir, { recursive: true, force: true });
       torrent.hlsPlaylistPath = null;
       torrent.downloadStatus = 'not_started';
@@ -408,7 +490,10 @@ const startHlsConversion = async (
           downloadStatus: torrent.downloadStatus,
         });
       }
-      reject(err);
+      if (!isResolved) {
+        isResolved = true;
+        reject(err);
+      }
     });
 
     ffmpegCommand.run();
