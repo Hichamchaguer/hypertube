@@ -1,4 +1,8 @@
 import express from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 import mongoose from 'mongoose';
 import authRoutes from './modules/auth/auth.routes';
 import cors from 'cors';

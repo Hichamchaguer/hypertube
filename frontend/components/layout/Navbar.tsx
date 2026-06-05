@@ -6,7 +6,7 @@ import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import api from "@/api/axios";
 
@@ -16,7 +16,8 @@ interface NavbarProps {
 
 export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = React.useState(searchParams.get("search") || "");
   const [isAuth, setIsAuth] = React.useState(authenticated);
   const [isLoading, setIsLoading] = React.useState(!authenticated);
 
@@ -43,6 +44,13 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
     }
   }, [authenticated]);
 
+  React.useEffect(() => {
+    const q = searchParams.get("search") || "";
+    if (q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
+
   const handleSignOut = async () => {
     try {
       await api.post("/logout");
@@ -53,6 +61,22 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
     setIsAuth(false);
     router.push("/signin");
   };
+
+  React.useEffect(() => {
+    if (!isAuth) return;
+
+    // Only auto-search if on dashboard or if there's a search occurring
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        router.push(`/dashboard?search=${encodeURIComponent(searchQuery)}`);
+      } else if (searchQuery === "" && window.location.search.includes("search=")) {
+        // If cleared and was searching, go back to dashboard
+        router.push('/dashboard');
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isAuth, router]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

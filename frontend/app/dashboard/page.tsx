@@ -71,8 +71,9 @@ const DashboardContent = () => {
     };
 
     const getMovies = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetchMovies();
+        const response = await fetchMovies(searchQuery);
         const mappedMovies: Movie[] = response.map((movie: ApiMovie) => {
           const genres = (movie.genres || [])
             .map((genre) => {
@@ -105,7 +106,7 @@ const DashboardContent = () => {
 
     getUser();
     getMovies();
-  }, [router]);
+  }, [router, searchQuery]);
 
   const featuredMovie = movies[0];
   const featuredBackdrop = featuredMovie?.poster || FALLBACK_HERO_IMAGE;
@@ -170,7 +171,9 @@ const DashboardContent = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-6 bg-primary rounded-full" />
-            <h2 className="text-xl font-bold text-white tracking-wide">Popular Movies</h2>
+            <h2 className="text-xl font-bold text-white tracking-wide">
+              {searchQuery ? `Results for "${searchQuery}"` : "Popular Movies"}
+            </h2>
           </div>
           
           <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
@@ -196,19 +199,37 @@ const DashboardContent = () => {
                <MovieCardSkeleton key={idx} />
             ))
           ) : (
-            movies.map((movie, idx) => (
-              <MovieCard 
-                key={idx}
-                id={movie.id}
-                title={movie.title}
-                year={movie.year}
-                rating={movie.rating}
-                image={movie.poster}
-                genres={movie.genres}
-                backdrop={movie.backdrop}
-                synopsis={movie.synopsis}
-              />
-            ))
+            (() => {
+              const filteredMovies = movies.filter(movie => 
+                selectedGenre === "All" || movie.genres.includes(selectedGenre)
+              );
+
+              if (filteredMovies.length === 0) {
+                return (
+                  <div className="col-span-full py-20 text-center">
+                    <p className="text-white/40 text-lg font-medium">
+                      {searchQuery 
+                        ? `No results found for "${searchQuery}"${selectedGenre !== "All" ? ` in ${selectedGenre}` : ""}`
+                        : "No movies found in this category."}
+                    </p>
+                  </div>
+                );
+              }
+
+              return filteredMovies.map((movie, idx) => (
+                <MovieCard 
+                  key={idx}
+                  id={movie.id}
+                  title={movie.title}
+                  year={movie.year}
+                  rating={movie.rating}
+                  image={movie.poster}
+                  genres={movie.genres}
+                  backdrop={movie.backdrop}
+                  synopsis={movie.synopsis}
+                />
+              ));
+            })()
           )}
         </div>
       </div>

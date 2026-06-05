@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-white font-sans shrink-0">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-white font-sans shrink-0">
         <PageTransition>
           {children}
         </PageTransition>

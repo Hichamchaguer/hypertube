@@ -11,9 +11,10 @@ export const fetchUser = async () => {
 };
 
 
-export const fetchMovies = async () => {
+export const fetchMovies = async (searchQuery?: string) => {
     try {
-        const response = await api.get("/movies");
+        const endpoint = searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}` : "/movies";
+        const response = await api.get(endpoint);
         const data = response.data;
         return Array.isArray(data) ? data : data.results;
     } catch (error) {
@@ -44,7 +45,9 @@ export const fetchAvailableQualities = async (imdbId: string) => {
 
 export const startTorrentStream = async (imdbId: string, quality: string) => {
     try {
-        const response = await api.get(`/torrent/stream/${imdbId}/${quality}`);
+        const response = await api.get(`/torrent/stream/${imdbId}/${quality}`, {
+            timeout: 60000,
+        });
         return response.data;
     } catch (error) {
         console.error(`Failed to start stream for ${imdbId}`, error);

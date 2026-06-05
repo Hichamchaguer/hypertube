@@ -245,16 +245,23 @@ export const createStream = async (
     });
   }
 
-  await new Promise((resolve) => {
+  await new Promise((resolve, reject) => {
+    let timeout: NodeJS.Timeout;
     const interval = setInterval(async () => {
       try {
         await fs.promises.access(join(process.cwd(), playlistPath));
         clearInterval(interval);
+        if (timeout) clearTimeout(timeout);
         resolve(true);
       } catch {
         return;
       }
     }, 1000);
+
+    timeout = setTimeout(() => {
+      clearInterval(interval);
+      reject(new Error('Timeout waiting for playlist creation'));
+    }, 45000);
   });
 
   return {
