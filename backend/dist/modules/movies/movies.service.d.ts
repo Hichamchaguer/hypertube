@@ -1,3 +1,7 @@
+export declare const resolveMovieIds: (movieId: string) => Promise<{
+    tmdbId: string;
+    imdbId: string | null;
+}>;
 export declare const fetchPopularMovies: () => Promise<{
     page: any;
     results: any;
@@ -12,8 +16,24 @@ export declare const fetchMovieById: (id: string) => Promise<{
     genres: any;
     synopsis: any;
     runtime: any;
-    poster: string;
-    backdrop: string;
+    poster: string | null;
+    backdrop: string | null;
+    directors: any;
+    actors: any;
+    trailer: any;
+}>;
+export declare const fetchMovieDetailsById: (movieId: string) => Promise<{
+    id: any;
+    tmdbId: string;
+    imdbId: any;
+    title: any;
+    year: any;
+    rating: any;
+    genres: any;
+    synopsis: any;
+    runtime: any;
+    poster: string | null;
+    backdrop: string | null;
     directors: any;
     actors: any;
     trailer: any;

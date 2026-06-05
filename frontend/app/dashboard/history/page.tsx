@@ -28,6 +28,7 @@ export default function HistoryPage() {
     const getHistory = async () => {
       try {
         const data = await fetchWatchHistory();
+        console.log("Fetched history:", data);
         setHistory(data);
       } catch (error) {
         console.error("Failed to fetch history", error);
@@ -72,10 +73,6 @@ export default function HistoryPage() {
         ) : history.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
             {history.map((item) => {
-              const posterPath = item.movie.poster;
-              const imageUrl = (posterPath && !posterPath.startsWith('http')) 
-                ? `https://image.tmdb.org/t/p/w500${posterPath}` 
-                : posterPath || "";
                 
               return (
                 <HistoryCard 
@@ -84,7 +81,7 @@ export default function HistoryPage() {
                   title={item.movie.title}
                   year={Number(item.movie.year)}
                   rating={item.movie.rating}
-                  image={imageUrl}
+                  image={item.movie.poster}
                   duration={formatDuration(item.movie.duration)}
                   description={item.movie.synopsis}
                 />

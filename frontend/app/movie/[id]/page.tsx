@@ -40,6 +40,7 @@ interface ApiMovie {
   rating?: number;
   genres?: Array<number | string>;
   synopsis?: string;
+  runtime?: number | null;
   poster?: string | null;
   backdrop?: string | null;
 }
@@ -52,6 +53,7 @@ interface MovieDetails {
   rating: number;
   genres: string[];
   synopsis: string;
+  runtime: number;
   poster: string;
   backdrop: string;
 }
@@ -82,7 +84,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             return tmdbGenreMap[genre];
           })
           .filter(Boolean) as string[];
-        console.log("Fetched movie data:", genres);
 
         const resolvedMovie: MovieDetails = {
           id: String(movie.id),
@@ -92,6 +93,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           rating: typeof movie.rating === "number" ? movie.rating : 0,
           genres,
           synopsis: movie.synopsis || "No synopsis available.",
+          runtime: typeof movie.runtime === "number" ? movie.runtime : 0,
           poster: movie.poster || FALLBACK_POSTER,
           backdrop: movie.backdrop || movie.poster || FALLBACK_BACKDROP,
         };
@@ -242,6 +244,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                       try {
                         const imdbId = movieData.imdbId || movieData.id;
                         const qualities = await fetchAvailableQualities(imdbId);
+                        console.log("Fetched qualities:", qualities);
                         if (!qualities.length) {
                           throw new Error("No qualities available");
                         }
@@ -254,8 +257,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                         const quality = preferred || sorted[0];
                         const params = new URLSearchParams({
                           imdbId,
-                          quality,
+                          quality : quality || "720p",
                           title: movieData.title,
+                          runtime: String(movieData.runtime || 0),
                         });
                         router.push(`/player?${params.toString()}`);
                       } catch (error: any) {

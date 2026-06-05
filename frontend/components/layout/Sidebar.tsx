@@ -35,7 +35,6 @@ export const Sidebar = () => {
     const getUser = async () => {
       try {
         const userData = await fetchUser();
-        console.log("Fetched user data:", userData); // Debug log
         setUserName(userData);
         if (!userData) {
           router.push("/signin");

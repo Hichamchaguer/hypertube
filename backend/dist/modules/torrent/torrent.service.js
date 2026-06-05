@@ -57,76 +57,60 @@ const parse_torrent_1 = __importDefault(require("parse-torrent"));
 const scrapTorrentLinks_1 = require("./helpers/scrapTorrentLinks");
 const video_1 = __importDefault(require("../../database/models/video"));
 const torrent_1 = __importDefault(require("../../database/models/torrent"));
+const movies_service_1 = require("../movies/movies.service");
 fluent_ffmpeg_1.default.setFfmpegPath(ffmpeg_1.default.path);
-const createTmdbClient = () => {
-    const baseURL = process.env.TMDB_BASE_URL;
-    const apiKey = process.env.TMDB_API_KEY;
-    if (!baseURL || !apiKey) {
-        throw new Error('TMDB_BASE_URL or TMDB_API_KEY is not defined in environment');
-    }
-    return axios_1.default.create({
-        baseURL,
-        params: {
-            api_key: apiKey,
-        },
+const buildVideoPayload = (movieInfo) => {
+    var _a, _b;
+    return ({
+        tmdbId: Number((_a = movieInfo.tmdbId) !== null && _a !== void 0 ? _a : movieInfo.id),
+        imdbId: movieInfo.imdbId || undefined,
+        title: movieInfo.title,
+        year: movieInfo.year || '',
+        duration: movieInfo.runtime || 0,
+        rating: (_b = movieInfo.rating) !== null && _b !== void 0 ? _b : 0,
+        genres: movieInfo.genres || [],
+        synopsis: movieInfo.synopsis || '',
+        poster: movieInfo.poster || null,
+        backdrop: movieInfo.backdrop || null,
+        directors: movieInfo.directors || [],
+        actors: movieInfo.actors || [],
+        trailer: movieInfo.trailer || null,
     });
 };
-const isImdbId = (movieId) => /^tt\d+$/i.test(movieId);
-const resolveMovieIds = (movieId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const tmdb = createTmdbClient();
-    if (isImdbId(movieId)) {
-        const response = yield tmdb.get(`/find/${movieId}`, {
-            params: {
-                external_source: 'imdb_id',
-            },
-        });
-        const result = (_b = (_a = response.data) === null || _a === void 0 ? void 0 : _a.movie_results) === null || _b === void 0 ? void 0 : _b[0];
-        if (!(result === null || result === void 0 ? void 0 : result.id)) {
-            throw new Error('TMDB movie not found for IMDb id');
-        }
-        return {
-            tmdbId: String(result.id),
-            imdbId: movieId,
-        };
-    }
-    return {
-        tmdbId: movieId,
-        imdbId: null,
-    };
-});
 const getMovieInfo = (movieId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const tmdb = createTmdbClient();
-    const { tmdbId, imdbId } = yield resolveMovieIds(movieId);
-    const response = yield tmdb.get(`/movie/${tmdbId}`, {
-        params: {
-            append_to_response: 'external_ids',
-        },
-    });
-    const movie = response.data;
+    var _a;
+    const movieDetails = yield (0, movies_service_1.fetchMovieDetailsById)(movieId);
     return {
-        tmdbId,
-        imdbId: ((_a = movie.external_ids) === null || _a === void 0 ? void 0 : _a.imdb_id) || imdbId,
-        title: movie.title,
-        year: parseInt(((_b = movie.release_date) === null || _b === void 0 ? void 0 : _b.split('-')[0]) || '0', 10),
+        tmdbId: (_a = movieDetails.tmdbId) !== null && _a !== void 0 ? _a : String(movieDetails.id),
+        imdbId: movieDetails.imdbId,
+        title: movieDetails.title,
+        year: parseInt(movieDetails.year || '0', 10),
+        details: movieDetails,
     };
 });
 const getOrCreateTorrents = (movieId) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
     const movieInfo = yield getMovieInfo(movieId);
+    const payload = buildVideoPayload(movieInfo.details);
     let video = yield video_1.default.findOne({ tmdbId: Number(movieInfo.tmdbId) });
     if (!video) {
-        video = yield video_1.default.create({
-            tmdbId: Number(movieInfo.tmdbId),
-            imdbId: movieInfo.imdbId || undefined,
-            title: movieInfo.title,
-            year: String(movieInfo.year || ''),
-            watched: false,
-        });
+        video = yield video_1.default.create(Object.assign(Object.assign({}, payload), { watched: false }));
     }
-    else if (!video.imdbId && movieInfo.imdbId) {
-        video.imdbId = movieInfo.imdbId;
-        yield video.save();
+    else {
+        const shouldUpdate = (!video.imdbId && payload.imdbId) ||
+            !video.synopsis ||
+            !video.poster ||
+            !video.backdrop ||
+            !((_a = video.genres) === null || _a === void 0 ? void 0 : _a.length) ||
+            !((_b = video.directors) === null || _b === void 0 ? void 0 : _b.length) ||
+            !((_c = video.actors) === null || _c === void 0 ? void 0 : _c.length) ||
+            !video.trailer ||
+            !video.duration ||
+            !video.rating;
+        if (shouldUpdate) {
+            Object.assign(video, payload);
+            yield video.save();
+        }
     }
     const existingTorrents = yield torrent_1.default.find({ movie_id: video._id });
     if (existingTorrents.length) {
