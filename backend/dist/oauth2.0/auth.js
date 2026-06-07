@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.isLoggedIn = void 0;
 const passport_1 = __importDefault(require("passport"));
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const user_1 = __importDefault(require("../database/models/user"));
@@ -42,21 +43,17 @@ passport_1.default.use(new GoogleStrategy({
                 createdAt: new Date()
             });
             yield user.save();
-            done(null, user);
         }
+        return done(null, user);
     }
     catch (err) {
         return done(err, null);
     }
 })));
-passport_1.default.serializeUser((user, done) => {
-    done(null, user);
-});
-passport_1.default.deserializeUser((user, done) => {
-    done(null, user);
-});
 const googleAuth = passport_1.default.authenticate('google', {
-    scope: ['email', 'profile']
+    scope: ['profile', 'email'],
+    session: false,
+    prompt: 'select_account'
 });
 const googleCallBack = [passport_1.default.authenticate('google', {
         session: false,
@@ -64,20 +61,24 @@ const googleCallBack = [passport_1.default.authenticate('google', {
     }),
     (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const user = req.user;
             const token = jsonwebtoken_1.default.sign({ id: req.user._id }, 'secret');
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: false, // for http false and for https true
                 maxAge: 24 * 60 * 60 * 1000 // 1 day
             });
-            res.redirect('/api/profile');
+            return res.redirect('http://localhost:3000/dashboard');
         }
         catch (err) {
             res.status(500).json({ error: 'Authentication failed' });
         }
     })
 ];
+const isLoggedIn = (req, res, next) => {
+    console.log('user authorized is ', req.user);
+    req.user ? next() : res.sendStatus(401);
+};
+exports.isLoggedIn = isLoggedIn;
 module.exports = {
     googleAuth,
     googleCallBack
