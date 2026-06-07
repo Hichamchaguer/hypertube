@@ -5,16 +5,47 @@ import { User, Mail, Camera, Save, Shield, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import api from "@/api/axios";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: "Hicham",
-    lastName: "chaguer",
-    username: "hchaguer",
-    email: "hicham@hypertube.com"
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    profilePicture: ""
   });
+
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get("/user");
+        const user = response.data;
+
+        if (!user || typeof user.user === "string") {
+          router.push("/signin");
+          return;
+        }
+
+        setProfile({
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          username: user.username || "",
+          email: user.email || "",
+          profilePicture: user.profilePicture || ""
+        });
+      } catch (error) {
+        console.error("Failed to fetch profile", error);
+        router.push("/signin");
+      }
+    };
+
+    fetchProfile();
+  }, [router]);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -40,9 +71,10 @@ export default function ProfilePage() {
           <div className="relative group">
             <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border-4 border-card/50 ring-1 ring-white/10 shadow-2xl">
               <Image 
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} 
+                src={profile.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username || "User"}`} 
                 alt="Profile Avatar" 
                 fill 
+                sizes="(max-width: 768px) 100vw, 260px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] cursor-pointer">

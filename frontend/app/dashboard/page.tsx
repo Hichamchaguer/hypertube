@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Filter, Star, Play, Info } from "lucide-react";
+import { Star, Play, Info } from "lucide-react";
 import { MovieCard } from "@/components/ui/MovieCard";
 import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
@@ -15,7 +15,7 @@ const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
 
 function DashboardContent() {
   const [isLoading, setIsLoading] = React.useState(true);
-  const [userName, setUserName] = React.useState("Yassine");
+  const [userName, setUserName] = React.useState("");
   const router = useRouter(); 
   const searchParams = useSearchParams();
   const searchQuery = searchParams?.get("search")?.toLowerCase() || "";
@@ -25,11 +25,14 @@ function DashboardContent() {
     const fetchUser = async () => {
       try {
         const response = await api.get("/user");
-        if (response.data?.firstName) {
-          setUserName(response.data.firstName);
-        } else if (response.data?.username) {
-          setUserName(response.data.username);
+        const user = response.data;
+
+        if (!user || typeof user.user === "string") {
+          router.push("/signin");
+          return;
         }
+
+        setUserName(user.firstName || user.username || "there");
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch user session", error);

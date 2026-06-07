@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  BarChart3, 
   History, 
   Library, 
   User, 
@@ -13,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/Button";
-import Image from "next/image";
+import api from "@/api/axios";
 
 const navItems = [
   { label: "Popular Movies", icon: Flame, href: "/dashboard" },
@@ -25,6 +24,32 @@ const navItems = [
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const [user, setUser] = React.useState({
+    username: "",
+    profilePicture: ""
+  });
+
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await api.get("/user");
+        const sessionUser = response.data;
+
+        if (!sessionUser || typeof sessionUser.user === "string") {
+          return;
+        }
+
+        setUser({
+          username: sessionUser.username || sessionUser.firstName || "User",
+          profilePicture: sessionUser.profilePicture || ""
+        });
+      } catch (error) {
+        console.error("Failed to fetch sidebar user", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem("user");
@@ -36,15 +61,15 @@ export const Sidebar = () => {
       <div className="px-6 mb-10">
         <div className="bg-card/50 rounded-2xl p-3 border border-card-border/50 flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
-            <Image 
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Hicham" 
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src={user.profilePicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username || "User"}`} 
               alt="Avatar" 
-              fill 
-              className="object-cover"
+              className="h-full w-full object-cover"
             />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">hchaguer</p>
+            <p className="text-sm font-bold text-white">{user.username || "Loading..."}</p>
           </div>
         </div>
       </div>
