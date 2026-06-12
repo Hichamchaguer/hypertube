@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/Button";
-import Image from "next/image";
+
 
 const navItems = [
   { label: "Popular Movies", icon: Flame, href: "/dashboard" },
@@ -58,11 +58,11 @@ export const Sidebar = () => {
       <div className="px-6 mb-10">
         <div className="bg-card/50 rounded-2xl p-3 border border-card-border/50 flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
-            <Image 
-              src={userName.profilePicture || "/default-avatar.png"} 
-              alt="Avatar" 
-              fill 
-              className="object-cover"
+            <img
+              src={userName.profilePicture || "/default-avatar.png"}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
             />
           </div>
           <div>
