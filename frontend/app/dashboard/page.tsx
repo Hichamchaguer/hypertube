@@ -48,13 +48,13 @@ interface ApiMovie {
   backdrop?: string | null;
 }
 
-const DashboardContent = () => {
+function DashboardContent() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [movies, setMovies] = React.useState<Movie[]>([]);
   const [userName, setUserName] = React.useState("");
   const router = useRouter(); 
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
+  const searchQuery = searchParams?.get("search")?.toLowerCase() || "";
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
@@ -167,7 +167,6 @@ const DashboardContent = () => {
       </div>
 
       <div className="space-y-8">
-        {/* ... (Rest of the filtering and grid) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-6 bg-primary rounded-full" />
@@ -235,7 +234,7 @@ const DashboardContent = () => {
       </div>
     </div>
   );
-};
+}
 
 export default function DashboardPage() {
   return (
@@ -246,3 +245,5 @@ export default function DashboardPage() {
     </Suspense>
   );
 }
+
+

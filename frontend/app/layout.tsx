@@ -10,9 +10,20 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Hypertube - Stream Thousands of Movies Instantly",
   description: "Hypertube brings the power of BitTorrent streaming to your browser. Watch your favorite movies in HD with no ads.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Hypertube",
+  },
+};
+
+export const viewport = {
+  themeColor: "#ef4444",
 };
 
 import { PageTransition } from "@/components/layout/PageTransition";
+import { PWARegister } from "@/components/PWARegister";
 
 export default function RootLayout({
   children,
@@ -22,6 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-white font-sans shrink-0">
+        <PWARegister />
         <PageTransition>
           {children}
         </PageTransition>
