@@ -1,12 +1,15 @@
 module.exports = {
   reactStrictMode: true,
   images: {
-    unoptimized: true,
-    domains: [
-      "lh3.googleusercontent.com",
-      "image.tmdb.org",
-      "images.unsplash.com",
-      "api.dicebear.com"
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'image.tmdb.org' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'api.dicebear.com' },
     ],
+  },
+  experimental: {
+    scrollRestoration: true,
   },
 };

@@ -19,29 +19,33 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = React.useState(searchParams?.get("search") || "");
   const [isAuth, setIsAuth] = React.useState(authenticated);
-  const [isLoading, setIsLoading] = React.useState(!authenticated);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
-    // If not explicitly authenticated via prop, try to fetch user session
-    if (!authenticated) {
-      if (localStorage.getItem("user")) {
-         setIsAuth(true);
-         setIsLoading(false);
-      } else {
-         api.get("/user")
-           .then(() => {
-             setIsAuth(true);
-             setIsLoading(false);
-           })
-           .catch(() => {
-             setIsAuth(false);
-             setIsLoading(false);
-           });
+    // Check auth on client mount
+    const checkAuth = async () => {
+      if (authenticated) {
+        setIsAuth(true);
+        setIsLoading(false);
+        return;
       }
-    } else {
-      setIsAuth(true);
-      setIsLoading(false);
-    }
+
+      if (localStorage.getItem("user")) {
+        setIsAuth(true);
+        setIsLoading(false);
+      } else {
+        try {
+          await api.get("/user");
+          setIsAuth(true);
+        } catch {
+          setIsAuth(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
   }, [authenticated]);
 
   React.useEffect(() => {

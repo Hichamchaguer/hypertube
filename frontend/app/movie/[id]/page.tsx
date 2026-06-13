@@ -170,7 +170,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="min-h-screen bg-[#0a0b10] flex flex-col font-sans">
-      <Navbar authenticated />
+      <React.Suspense fallback={<div className="h-20" />}>
+        <Navbar authenticated />
+      </React.Suspense>
 
       <main className="flex-1 relative">
         {/* Cinematic Backdrop */}

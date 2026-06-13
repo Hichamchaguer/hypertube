@@ -5,6 +5,7 @@ import "./globals.css";
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,6 +26,8 @@ export const viewport = {
 import { PageTransition } from "@/components/layout/PageTransition";
 import { PWARegister } from "@/components/PWARegister";
 
+import { LazyMotion, domAnimation } from "framer-motion";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,11 +35,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} h-full antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://image.tmdb.org" />
+      </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-white font-sans shrink-0">
         <PWARegister />
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <LazyMotion features={domAnimation}>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </LazyMotion>
       </body>
     </html>
   );

@@ -58,7 +58,9 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center">
-      <Navbar />
+      <React.Suspense fallback={<div className="h-20" />}>
+        <Navbar />
+      </React.Suspense>
 
       <main className="flex-1 flex flex-col items-center justify-center w-full px-4 py-12">
         <div className="w-full max-w-md bg-card border border-card-border/50 rounded-3xl p-10 shadow-2xl relative overflow-hidden">

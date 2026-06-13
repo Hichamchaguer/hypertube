@@ -1,15 +1,22 @@
 import React from "react";
-import { Search, Zap, Shield, Tv, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Star } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import dynamic from "next/dynamic";
+
+const Features = dynamic(() => import("@/components/landing/Features"), {
+  loading: () => <div className="h-[400px] w-full animate-pulse bg-white/5 rounded-[2.5rem]" />,
+});
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center font-sans">
-      <Navbar />
+      <React.Suspense fallback={<div className="h-20" />}>
+        <Navbar />
+      </React.Suspense>
 
       <main className="w-full max-w-7xl px-8 flex flex-col pt-16 pb-32">
         {/* Hero Section */}
@@ -41,7 +48,8 @@ export default function LandingPage() {
                         src="https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop" 
                         alt="The Shawshank Redemption" 
                         fill 
-                        sizes="(max-width: 768px) 100vw, 440px"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 440px"
+                        priority
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                 </div>
@@ -68,30 +76,7 @@ export default function LandingPage() {
         <div className="w-full h-px bg-gradient-to-r from-transparent via-white/5 to-transparent my-24" />
 
         {/* Features Section */}
-        <section id="features" className="text-center space-y-16">
-          <div className="space-y-4">
-            <h2 className="text-5xl font-bold text-white tracking-tight">Powerful Features</h2>
-            <p className="text-[#94a3b8] max-w-2xl mx-auto text-lg font-medium">
-              Hypertube combines the best of torrent technology with modern streaming for an unparalleled experience
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6">
-            {[
-              { icon: Zap, title: "Instant Streaming", desc: "Start watching as soon as the download begins. No wait, just pure entertainment." },
-              { icon: Shield, title: "Secure & Private", desc: "No personal data required. Watch your favorite movies with total anonymity and peace of mind." },
-              { icon: Tv, title: "HD Quality", desc: "Enjoy movies in crystal clear high definition quality. Supporting up to 4K resolution." }
-            ].map((f, i) => (
-              <div key={i} className="bg-[#1a1c26]/40 border border-white/5 p-12 rounded-[2.5rem] hover:bg-[#1a1c26]/60 transition-all duration-300 group text-center flex flex-col items-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-inner">
-                  <f.icon className="w-10 h-10 text-primary" />
-                </div>
-                <h4 className="text-2xl font-bold text-white mb-4">{f.title}</h4>
-                <p className="text-[#94a3b8] leading-relaxed font-medium">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        <Features />
       </main>
     </div>
   );
