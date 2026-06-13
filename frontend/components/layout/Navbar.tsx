@@ -17,7 +17,7 @@ interface NavbarProps {
 export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = React.useState(searchParams.get("search") || "");
+  const [searchQuery, setSearchQuery] = React.useState(searchParams?.get("search") || "");
   const [isAuth, setIsAuth] = React.useState(authenticated);
   const [isLoading, setIsLoading] = React.useState(!authenticated);
 
@@ -45,7 +45,7 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
   }, [authenticated]);
 
   React.useEffect(() => {
-    const q = searchParams.get("search") || "";
+    const q = searchParams?.get("search") || "";
     if (q !== searchQuery) {
       setSearchQuery(q);
     }
@@ -103,13 +103,13 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
 
       {!isAuth ? (
         <>
-          <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-6">
+          {/* <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-6">
             <Link href="/" className="text-sm font-medium text-muted hover:text-white transition-colors">Home</Link>
             <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-white transition-colors">Dashboard</Link>
             <Link href="/dashboard/history" className="text-sm font-medium text-muted hover:text-white transition-colors">History</Link>
             <Link href="/dashboard/library" className="text-sm font-medium text-muted hover:text-white transition-colors">Library</Link>
             <Link href="/dashboard/profile" className="text-sm font-medium text-muted hover:text-white transition-colors">Profile</Link>
-          </div>
+          </div> */}
           <div className="flex items-center gap-4">
             <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Sign In</Link>
             <Link href="/signup">

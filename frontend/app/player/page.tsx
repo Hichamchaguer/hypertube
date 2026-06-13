@@ -8,10 +8,10 @@ import { VideoPlayer } from "@/components/video/VideoPlayer";
 const PlayerContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const imdbId = searchParams.get("imdbId")?.trim() || "";
-  const quality = searchParams.get("quality")?.trim() || "";
-  const title = searchParams.get("title")?.trim() || "";
-  const runtimeParam = searchParams.get("runtime")?.trim() || "";
+  const imdbId = searchParams?.get("imdbId")?.trim() || "";
+  const quality = searchParams?.get("quality")?.trim() || "";
+  const title = searchParams?.get("title")?.trim() || "";
+  const runtimeParam = searchParams?.get("runtime")?.trim() || "";
   const runtime = Number(runtimeParam) || 0;
 
   if (!imdbId || !quality) {

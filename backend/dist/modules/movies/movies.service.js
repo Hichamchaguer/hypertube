@@ -161,8 +161,12 @@ const searchMovies = (query) => __awaiter(void 0, void 0, void 0, function* () {
         return ({
             id: movie.id,
             title: movie.title,
-            poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
             year: (_a = movie.release_date) === null || _a === void 0 ? void 0 : _a.split('-')[0],
+            rating: movie.vote_average,
+            poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+            backdrop: movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null,
+            synopsis: movie.overview,
+            genres: movie.genre_ids,
         });
     });
 });

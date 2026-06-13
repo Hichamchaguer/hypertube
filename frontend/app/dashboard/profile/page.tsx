@@ -18,12 +18,13 @@ export default function ProfilePage() {
     email: "",
     profilePicture: "",
   });
-
+  console.log("Current profile state:", profile.profilePicture);
   React.useEffect(() => {
     const getUser = async () => {
       try {
         const userData = await fetchUser();
         setProfile(userData);
+        console.log("Fetched user data:", userData.profilePicture);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -55,9 +56,9 @@ export default function ProfilePage() {
           <div className="relative group">
             <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border-4 border-card/50 ring-1 ring-white/10 shadow-2xl">
               <Image 
-                src={profile.profilePicture || "/default-avatar.png"} 
-                alt="user Avatar" 
-                fill 
+                src={profile.profilePicture || "/default-avatar.png"}
+                alt="user Avatar"
+                fill
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] cursor-pointer">

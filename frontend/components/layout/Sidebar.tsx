@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import { fetchUser } from "@/api/services/getData";
@@ -58,9 +59,11 @@ export const Sidebar = () => {
       <div className="px-6 mb-10">
         <div className="bg-card/50 rounded-2xl p-3 border border-card-border/50 flex items-center gap-3">
           <div className="relative w-10 h-10 rounded-xl overflow-hidden ring-2 ring-primary/20">
-            <img
+            <Image
               src={userName.profilePicture || "/default-avatar.png"}
               alt="Avatar"
+              width={80}
+              height={80}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
             />

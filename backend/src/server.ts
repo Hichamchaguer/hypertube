@@ -18,10 +18,10 @@ import historyRoutes from './modules/history/history.routes';
 import libraryRoutes from './modules/library/library.routes';
 
 
-mongoose.connect('mongodb://localhost:27017/hypertube_server').then(() => {
-  console.log('Connected to MongoDB');
+mongoose.connect('mongodb://hicham:123@mongodb:27017/hypertube_server?authSource=admin').then(() => {
+  console.log('Connected to Mongodb');
 }).catch((err) => {
-  console.error('Error connecting to MongoDB:', err);
+  console.error('Error connecting to Mongodb:', err);
 });
 
 const app = express();

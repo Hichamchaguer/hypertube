@@ -5,6 +5,9 @@ import { History, Film } from "lucide-react";
 import { HistoryCard } from "@/components/ui/HistoryCard";
 import { fetchWatchHistory } from "@/api/services/getData";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
+import { fetchUser } from "@/api/services/getData";
+import { useRouter } from "next/navigation";
+
 
 interface HistoryItem {
   historyId: string;
@@ -23,6 +26,8 @@ interface HistoryItem {
 export default function HistoryPage() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const getHistory = async () => {
@@ -37,6 +42,19 @@ export default function HistoryPage() {
       }
     };
 
+    const getUser = async () => {
+        try {
+          const response = await fetchUser();
+          if (response.firstName || response.username) {
+            setUserName(response.firstName || response.username);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user session", error);
+          router.push("/signin");
+        }
+    };
+
+    getUser();
     getHistory();
   }, []);
 
@@ -51,7 +69,7 @@ export default function HistoryPage() {
     <div className="space-y-10">
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
-          Welcome back, <span className="text-gradient">Hicham</span>
+          Welcome back, <span className="text-gradient">{userName}</span>
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>

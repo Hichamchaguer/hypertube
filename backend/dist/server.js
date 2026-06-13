@@ -4,6 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const mongoose_1 = __importDefault(require("mongoose"));
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const cors_1 = __importDefault(require("cors"));
@@ -18,9 +20,9 @@ const comments_routes_1 = __importDefault(require("./modules/comments/comments.r
 const history_routes_1 = __importDefault(require("./modules/history/history.routes"));
 const library_routes_1 = __importDefault(require("./modules/library/library.routes"));
 mongoose_1.default.connect('mongodb://localhost:27017/hypertube_server').then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Connected to Mongodb');
 }).catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
+    console.error('Error connecting to Mongodb:', err);
 });
 const app = (0, express_1.default)();
 app.use((0, cookie_parser_1.default)());

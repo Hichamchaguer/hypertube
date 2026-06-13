@@ -229,17 +229,24 @@ const createStream = (movieId, quality) => __awaiter(void 0, void 0, void 0, fun
             downloadStatus: torrent.downloadStatus,
         });
     }
-    yield new Promise((resolve) => {
+    yield new Promise((resolve, reject) => {
+        let timeout;
         const interval = setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 yield fs.promises.access((0, path_1.join)(process.cwd(), playlistPath));
                 clearInterval(interval);
+                if (timeout)
+                    clearTimeout(timeout);
                 resolve(true);
             }
             catch (_a) {
                 return;
             }
         }), 1000);
+        timeout = setTimeout(() => {
+            clearInterval(interval);
+            reject(new Error('Timeout waiting for playlist creation'));
+        }, 45000);
     });
     return {
         success: true,
@@ -302,6 +309,79 @@ const createTorrentEngine = (movieId, torrent) => __awaiter(void 0, void 0, void
         });
     });
 });
+// const startHlsConversion = async (
+//   torrent: TorrentMeta,
+//   videoFile: any,
+//   hlsDir: string,
+//   movieId: string,
+// ) => {
+//   return new Promise<string>(async (resolve, reject) => {
+//     const hlsFullDir = join(process.cwd(), hlsDir);
+//     try {
+//       await fs.promises.mkdir(hlsFullDir, { recursive: true });
+//     } catch (err) {
+//       return reject(err);
+//     }
+//   const playlistPath = join(hlsFullDir, 'playlist.m3u8');
+//   const playlistRelativePath = join(hlsDir, 'playlist.m3u8');
+//     const segmentPattern = join(hlsFullDir, 'segment_%03d.ts');
+//     const videoStream = videoFile.createReadStream();
+//     const fileExtension = extname(videoFile.name);
+//     let ffmpegCommand: ffmpeg.FfmpegCommand;
+//     if (fileExtension === '.mp4') {
+//       ffmpegCommand = ffmpeg(videoStream)
+//         .addOptions([
+//           '-c copy',
+//           '-f hls',
+//           '-hls_time 4',
+//           '-hls_list_size 0',
+//           '-hls_flags independent_segments',
+//           '-hls_segment_filename',
+//           segmentPattern,
+//         ])
+//         .output(playlistPath);
+//     } else {
+//       ffmpegCommand = getFFmpegMkvConversionCommand(
+//         videoStream,
+//         segmentPattern,
+//         playlistPath,
+//       );
+//     }
+//     ffmpegCommand.on('start', async () => {
+//       torrent.downloadStatus = 'downloading';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//     });
+//     ffmpegCommand.on('progress', () => {
+//   resolve(playlistRelativePath);
+//     });
+//     ffmpegCommand.on('end', async () => {
+//       torrent.downloadStatus = 'completed';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//     });
+//     ffmpegCommand.on('error', async (err: Error) => {
+//       await fs.promises.rm(hlsFullDir, { recursive: true, force: true });
+//       torrent.hlsPlaylistPath = null;
+//       torrent.downloadStatus = 'not_started';
+//       if (torrent._id) {
+//         await Torrent.findByIdAndUpdate(torrent._id, {
+//           hlsPlaylistPath: torrent.hlsPlaylistPath,
+//           downloadStatus: torrent.downloadStatus,
+//         });
+//       }
+//       reject(err);
+//     });
+//     ffmpegCommand.run();
+//   });
+// };
+// Replace the startHlsConversion function in torrent.service.ts
 const startHlsConversion = (torrent, videoFile, hlsDir, movieId) => __awaiter(void 0, void 0, void 0, function* () {
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         const hlsFullDir = (0, path_1.join)(process.cwd(), hlsDir);
@@ -317,14 +397,17 @@ const startHlsConversion = (torrent, videoFile, hlsDir, movieId) => __awaiter(vo
         const videoStream = videoFile.createReadStream();
         const fileExtension = (0, path_1.extname)(videoFile.name);
         let ffmpegCommand;
+        let isResolved = false; // Track if we've already resolved
         if (fileExtension === '.mp4') {
             ffmpegCommand = (0, fluent_ffmpeg_1.default)(videoStream)
                 .addOptions([
                 '-c copy',
                 '-f hls',
                 '-hls_time 4',
-                '-hls_list_size 0',
-                '-hls_flags independent_segments',
+                '-hls_list_size 0', // Keep all segments in playlist
+                '-hls_flags independent_segments+program_date_time',
+                '-hls_segment_type mpegts',
+                '-hls_playlist_type vod', // Change from 'event' to 'vod' if you know total duration
                 '-hls_segment_filename',
                 segmentPattern,
             ])
@@ -341,18 +424,32 @@ const startHlsConversion = (torrent, videoFile, hlsDir, movieId) => __awaiter(vo
                 });
             }
         }));
-        ffmpegCommand.on('progress', () => {
-            resolve(playlistRelativePath);
+        ffmpegCommand.on('progress', (progress) => {
+            console.log(`FFmpeg progress: ${progress.percent}% done`);
+            // Only resolve after we have at least 10 segments (40 seconds) OR 5% of expected duration
+            // But don't resolve immediately at first progress event
+            if (!isResolved && progress.percent && progress.percent > 5) {
+                isResolved = true;
+                console.log(`Resolving playlist after ${progress.percent}% conversion`);
+                resolve(playlistRelativePath);
+            }
         });
         ffmpegCommand.on('end', () => __awaiter(void 0, void 0, void 0, function* () {
+            console.log('FFmpeg conversion completed');
             torrent.downloadStatus = 'completed';
             if (torrent._id) {
                 yield torrent_1.default.findByIdAndUpdate(torrent._id, {
                     downloadStatus: torrent.downloadStatus,
                 });
             }
+            // If we haven't resolved yet (e.g., if conversion was very fast), resolve now
+            if (!isResolved) {
+                isResolved = true;
+                resolve(playlistRelativePath);
+            }
         }));
         ffmpegCommand.on('error', (err) => __awaiter(void 0, void 0, void 0, function* () {
+            console.error('FFmpeg error:', err);
             yield fs.promises.rm(hlsFullDir, { recursive: true, force: true });
             torrent.hlsPlaylistPath = null;
             torrent.downloadStatus = 'not_started';
@@ -362,7 +459,10 @@ const startHlsConversion = (torrent, videoFile, hlsDir, movieId) => __awaiter(vo
                     downloadStatus: torrent.downloadStatus,
                 });
             }
-            reject(err);
+            if (!isResolved) {
+                isResolved = true;
+                reject(err);
+            }
         }));
         ffmpegCommand.run();
     }));
