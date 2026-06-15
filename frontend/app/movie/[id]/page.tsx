@@ -1,47 +1,178 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useEffect, useState, use } from "react";
 import Image from "next/image";
 import { 
   ArrowLeft,
   Play, 
   Heart, 
   Star, 
-  Clock, 
-  Calendar,
-  X
+  Calendar
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Navbar } from "@/components/layout/Navbar";
-import { getMovieById } from "@/lib/movies";
-import { VideoPlayer } from "@/components/video/VideoPlayer";
+import api from "@/api/axios";
 import { CommentSection } from "@/components/movie/CommentSection";
+import { fetchAvailableQualities } from "@/api/services/getData";
 
 const FALLBACK_POSTER = "https://images.unsplash.com/photo-1485090916855-2c262179a76b?q=80&w=1000&auto=format&fit=crop";
 const FALLBACK_BACKDROP = "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=1000&auto=format&fit=crop";
 
+const tmdbGenreMap: Record<number, string> = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  10765: "Sci-Fi",
+  878: "Sci-Fi",
+};
+
+interface ApiMovie {
+  id: number;
+  imdbId?: string | null;
+  title?: string;
+  year?: string;
+  rating?: number;
+  genres?: Array<number | string>;
+  synopsis?: string;
+  runtime?: number | null;
+  poster?: string | null;
+  backdrop?: string | null;
+}
+
+interface MovieDetails {
+  id: string;
+  imdbId?: string | null;
+  title: string;
+  year: number;
+  rating: number;
+  genres: string[];
+  synopsis: string;
+  runtime: number;
+  poster: string;
+  backdrop: string;
+}
+
 export default function MovieDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const movieData = getMovieById(id);
-  
-  const [posterSrc, setPosterSrc] = useState(movieData?.poster || FALLBACK_POSTER);
-  const [backdropSrc, setBackdropSrc] = useState(movieData?.backdrop || FALLBACK_BACKDROP);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const router = useRouter();
+  const [movieData, setMovieData] = useState<MovieDetails | null>(null);
+  const [posterSrc, setPosterSrc] = useState(FALLBACK_POSTER);
+  const [backdropSrc, setBackdropSrc] = useState(FALLBACK_BACKDROP);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      try {
+        const response = await api.get<ApiMovie>(`/movies/${id}`);
+        const movie = response.data;
+        const genres = (movie.genres || [])
+          .map((genre) => {
+            if (typeof genre === "string") {
+              return genre;
+            }
+            return tmdbGenreMap[genre];
+          })
+          .filter(Boolean) as string[];
+
+        const resolvedMovie: MovieDetails = {
+          id: String(movie.id),
+          imdbId: movie.imdbId ?? null,
+          title: movie.title || "Untitled",
+          year: Number(movie.year) || 0,
+          rating: typeof movie.rating === "number" ? movie.rating : 0,
+          genres,
+          synopsis: movie.synopsis || "No synopsis available.",
+          runtime: typeof movie.runtime === "number" ? movie.runtime : 0,
+          poster: movie.poster || FALLBACK_POSTER,
+          backdrop: movie.backdrop || movie.poster || FALLBACK_BACKDROP,
+        };
+
+        setMovieData(resolvedMovie);
+        setPosterSrc(resolvedMovie.poster || FALLBACK_POSTER);
+        setBackdropSrc(resolvedMovie.backdrop || FALLBACK_BACKDROP);
+      } catch (error) {
+        console.error("Failed to fetch movie details", error);
+        setMovieData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const checkFavoriteStatus = async () => {
+      try {
+        const response = await api.get("/library");
+        const favorites = response.data;
+        const exists = favorites.some((fav: any) => 
+          fav.movie?.tmdbId === Number(id) || fav.movie?.imdbId === id
+        );
+        setIsFavorite(exists);
+      } catch (error) {
+        console.error("Failed to check favorite status", error);
+      }
+    };
+
+    fetchMovie();
+    checkFavoriteStatus();
+  }, [id]);
+
+  const handleToggleFavorite = async () => {
+    if (!movieData || isTogglingFavorite) return;
+    
+    setIsTogglingFavorite(true);
+    try {
+      const response = await api.post("/library/toggle", { movieId: id });
+      setIsFavorite(response.data.action === "added");
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+    } finally {
+      setIsTogglingFavorite(false);
+    }
+  };
+
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white">
+        <p className="text-sm font-semibold text-white/70">Loading movie...</p>
+      </div>
+    );
+  }
 
   if (!movieData) {
     return (
-      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white">
-        <h1 className="text-2xl font-bold mb-4">Movie not found</h1>
-        <Link href="/dashboard" className="text-primary hover:underline">Return to Dashboard</Link>
+      <div className="min-h-screen bg-[#0a0b10] flex flex-col items-center justify-center text-white px-6 text-center">
+        <div className="w-24 h-24 bg-rose-500/10 rounded-full flex items-center justify-center mb-8">
+           <Star className="w-10 h-10 text-rose-500 opacity-20" />
+        </div>
+        <h1 className="text-4xl font-bold mb-4 tracking-tight">Movie Not Found</h1>
+        <p className="text-white/60 max-w-md mb-10 leading-relaxed font-medium">
+          The movie you are looking for doesn&apos;t exist or has been removed from our library.
+        </p>
+        <Link href="/dashboard">
+          <Button size="lg" className="h-14 px-10 rounded-2xl bg-white text-black hover:bg-white/90 font-bold border-none">
+            Return to Dashboard
+          </Button>
+        </Link>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#0a0b10] flex flex-col font-sans">
-      <Navbar authenticated />
+      <React.Suspense fallback={<div className="h-20" />}>
+        <Navbar authenticated />
+      </React.Suspense>
 
       <main className="flex-1 relative">
         {/* Cinematic Backdrop */}
@@ -95,10 +226,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                     <Calendar className="w-4 h-4 text-white/60" />
                     <span className="text-sm">{movieData.year}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-white/80 font-medium">
-                    <Clock className="w-4 h-4 text-white/60" />
-                    <span className="text-sm">{movieData.duration}</span>
-                  </div>
                   <Badge variant="rating" className="bg-[#22c55e] text-white border-transparent px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-sm font-bold">
                     <Star className="w-3.5 h-3.5 fill-current" />
                     {movieData.rating}
@@ -106,28 +233,75 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {movieData.genres.map((genre) => (
-                    <Badge key={genre} className="bg-[#1a1c26] text-white/90 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
-                      {genre}
+                  {movieData.genres.length > 0 ? (
+                    movieData.genres.map((genre) => (
+                      <Badge key={genre} className="bg-[#1a1c26] text-white/90 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
+                        {genre}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge className="bg-[#1a1c26] text-white/70 border-white/5 text-xs font-semibold px-4 py-1.5 rounded-full">
+                      Unlisted Genre
                     </Badge>
-                  ))}
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4 pt-4">
                   <Button 
                     size="lg" 
                     className="bg-[#ef4444] hover:bg-[#ef4444]/90 text-white font-bold px-10 gap-3 rounded-xl h-14"
-                    onClick={() => setIsPlaying(true)}
+                    onClick={async () => {
+                      setLaunchError(null);
+                      setIsLaunching(true);
+                      try {
+                        const imdbId = movieData.imdbId || movieData.id;
+                        const qualities = await fetchAvailableQualities(imdbId);
+                        console.log("Fetched qualities:", qualities);
+                        if (!qualities.length) {
+                          throw new Error("No qualities available");
+                        }
+                        const sorted = [...qualities].sort((a, b) => {
+                          const first = parseInt(a.replace("p", ""), 10);
+                          const second = parseInt(b.replace("p", ""), 10);
+                          return second - first;
+                        });
+                        const preferred = sorted.find((item) => item === "720p");
+                        const quality = preferred || sorted[0];
+                        const params = new URLSearchParams({
+                          imdbId,
+                          quality : quality || "720p",
+                          title: movieData.title,
+                          runtime: String(movieData.runtime || 0),
+                        });
+                        router.push(`/player?${params.toString()}`);
+                      } catch (error: any) {
+                        setLaunchError(error?.message || "Failed to launch player");
+                      } finally {
+                        setIsLaunching(false);
+                      }
+                    }}
+                    disabled={isLaunching}
                   >
                     <Play className="w-5 h-5 fill-white" />
-                    Watch Now
+                    {isLaunching ? "Loading..." : "Watch Now"}
                   </Button>
-                  <Button variant="outline" size="lg" className="bg-[#1a1c26] hover:bg-[#1a1c26]/80 text-white font-bold px-10 gap-3 rounded-xl h-14 border-white/5">
-                    <Heart className="w-5 h-5" />
-                    Add to Favorites
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className={`bg-[#1a1c26] hover:bg-[#1a1c26]/80 text-white font-bold px-10 gap-3 rounded-xl h-14 border-white/5 transition-all ${isFavorite ? 'ring-2 ring-primary bg-primary/10' : ''}`}
+                    onClick={handleToggleFavorite}
+                    disabled={isTogglingFavorite}
+                  >
+                    <Heart className={`w-5 h-5 ${isFavorite ? 'fill-primary text-primary' : ''}`} />
+                    {isTogglingFavorite ? "Processing..." : (isFavorite ? "Saved to Library" : "Add to Favorites")}
                   </Button>
+
                 </div>
               </div>
+
+              {launchError && (
+                <p className="text-sm text-red-400 font-semibold">{launchError}</p>
+              )}
 
               {/* Synopsis Section */}
               <div className="space-y-4">
@@ -135,26 +309,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
                 <p className="text-white/70 leading-relaxed text-base max-w-3xl">
                   {movieData.synopsis}
                 </p>
-              </div>
-
-              {/* Cast & Crew Section */}
-              <div className="space-y-8">
-                <h2 className="text-2xl font-bold text-white tracking-tight">Cast & Crew</h2>
-                
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Directors</h3>
-                    <p className="text-white/80 leading-relaxed text-sm">
-                      {movieData.directors.join(", ")}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-muted uppercase tracking-widest mb-3">Actors</h3>
-                    <p className="text-white/80 leading-relaxed text-sm">
-                      {movieData.actors.join(", ")}
-                    </p>
-                  </div>
-                </div>
               </div>
 
               {/* Section Divider */}
@@ -166,27 +320,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
       </main>
-
-      {/* Video Player Modal/Overlay */}
-      {isPlaying && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col animate-in fade-in duration-300">
-          <div className="absolute top-6 left-10 z-[60]">
-            <button 
-              onClick={() => setIsPlaying(false)}
-              className="group flex items-center gap-3 text-white/50 hover:text-white transition-colors"
-            >
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
-                <X className="w-5 h-5" />
-              </div>
-              <span className="font-bold text-sm tracking-widest uppercase">Close Player</span>
-            </button>
-          </div>
-
-          <div className="flex-1 flex items-center justify-center relative">
-            <VideoPlayer movieTitle={movieData.title} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,46 +1,123 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronDown, Filter, Star, Play, Info } from "lucide-react";
 import { MovieCard } from "@/components/ui/MovieCard";
 import { Button } from "@/components/ui/Button";
 import { MovieCardSkeleton } from "@/components/ui/Skeleton";
-import { movies } from "@/lib/movies";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { fetchUser, fetchMovies } from "@/api/services/getData";
 
-const genres = ["All", "Action", "Drama", "Sci-Fi", "Adventure", "Crime"];
+const genres = ["All", "Adventure", "Animation", "Comedy", "Crime", "Drama", "Sci-Fi"];
 
-export default function DashboardPage() {
+const FALLBACK_HERO_IMAGE = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1400&auto=format&fit=crop";
+
+const tmdbGenreMap: Record<number, string> = {
+  28: "Action",
+  12: "Adventure",
+  16: "Animation",
+  35: "Comedy",
+  80: "Crime",
+  18: "Drama",
+  10765: "Sci-Fi",
+  878: "Sci-Fi",
+};
+
+interface Movie {
+  id: string;
+  title: string;
+  year: number;
+  rating: number;
+  genres: string[];
+  synopsis: string;
+  poster: string;
+  backdrop: string;
+  watched?: boolean;
+}
+
+interface ApiMovie {
+  id: number;
+  title?: string;
+  year?: string;
+  rating?: number;
+  genres?: number[];
+  synopsis?: string;
+  poster?: string | null;
+  backdrop?: string | null;
+}
+
+function DashboardContent() {
   const [isLoading, setIsLoading] = React.useState(true);
+  const [movies, setMovies] = React.useState<Movie[]>([]);
+  const [userName, setUserName] = React.useState("");
+  const router = useRouter(); 
   const searchParams = useSearchParams();
-  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
+  const searchQuery = searchParams?.get("search")?.toLowerCase() || "";
   const [selectedGenre, setSelectedGenre] = useState("All");
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+    const getUser = async () => {
+      try {
+        const response = await fetchUser();
+        if (response.firstName || response.username) {
+          setUserName(response.firstName || response.username);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user session", error);
+        router.push("/signin");
+      }
+    };
 
-  // Pick a featured movie (e.g., The Dark Knight)
-  const featuredMovie = movies.find(m => m.id === "dark-knight") || movies[0];
+    const getMovies = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetchMovies(searchQuery);
+        const mappedMovies: Movie[] = response.map((movie: ApiMovie) => {
+          const genres = (movie.genres || [])
+            .map((genre) => {
+              if (typeof genre === "string") {
+                return genre;
+              }
+              return tmdbGenreMap[genre];
+            })
+            .filter(Boolean) as string[];
 
-  const filteredMovies = movies.filter(movie => {
-    const matchesGenre = selectedGenre === "All" || movie.genres.includes(selectedGenre);
-    const matchesSearch = !searchQuery || 
-      movie.title.toLowerCase().includes(searchQuery) || 
-      movie.genres.some(g => g.toLowerCase().includes(searchQuery));
-    return matchesGenre && matchesSearch;
-  });
+          return {
+            id: String(movie.id),
+            title: movie.title || "Untitled",
+            year: Number(movie.year) || 0,
+            rating: typeof movie.rating === "number" ? movie.rating : 0,
+            genres,
+            synopsis: movie.synopsis || "No synopsis available.",
+            poster: movie.poster || "",
+            backdrop: movie.backdrop || "",
+          };
+        });
+
+        setMovies(mappedMovies);
+        setIsLoading(false);
+    } catch (error) {
+        console.error("Failed to fetch movies", error);
+        setIsLoading(false);
+      }
+    };
+
+    getUser();
+    getMovies();
+  }, [router, searchQuery]);
+
+  const featuredMovie = movies[0];
+  const featuredBackdrop = featuredMovie?.poster || FALLBACK_HERO_IMAGE;
 
   return (
     <div className="space-y-12 pb-12">
       {/* Cinematic Hero Section */}
-      {!searchQuery && selectedGenre === "All" && (
+      {!searchQuery && selectedGenre === "All" && featuredMovie && (
         <section className="relative h-[60vh] min-h-[450px] w-full rounded-[2.5rem] overflow-hidden group shadow-2xl">
-          <Image 
-            src={featuredMovie.backdrop} 
+          <Image
+            src={featuredBackdrop} 
             alt="Hero Background" 
             fill 
             className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -82,20 +159,20 @@ export default function DashboardPage() {
         </section>
       )}
 
-      {/* Main Content Title */}
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold text-white tracking-tight">
-          Welcome back, <span className="text-gradient">Yassine</span>
+          Welcome back, <span className="text-gradient">{userName}</span>
         </h1>
         <p className="text-muted/80 font-medium">Ready to continue your movie journey?</p>
       </div>
 
       <div className="space-y-8">
-        {/* ... (Rest of the filtering and grid) */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-6 bg-primary rounded-full" />
-            <h2 className="text-xl font-bold text-white tracking-wide">Popular Movies</h2>
+            <h2 className="text-xl font-bold text-white tracking-wide">
+              {searchQuery ? `Results for "${searchQuery}"` : "Popular Movies"}
+            </h2>
           </div>
           
           <div className="flex items-center gap-3 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
@@ -121,20 +198,52 @@ export default function DashboardPage() {
                <MovieCardSkeleton key={idx} />
             ))
           ) : (
-            filteredMovies.map((movie, idx) => (
-              <MovieCard 
-                key={idx}
-                id={movie.id}
-                title={movie.title}
-                year={movie.year}
-                rating={movie.rating}
-                image={movie.poster}
-                watched={movie.watched}
-              />
-            ))
+            (() => {
+              const filteredMovies = movies.filter(movie => 
+                selectedGenre === "All" || movie.genres.includes(selectedGenre)
+              );
+
+              if (filteredMovies.length === 0) {
+                return (
+                  <div className="col-span-full py-20 text-center">
+                    <p className="text-white/40 text-lg font-medium">
+                      {searchQuery 
+                        ? `No results found for "${searchQuery}"${selectedGenre !== "All" ? ` in ${selectedGenre}` : ""}`
+                        : "No movies found in this category."}
+                    </p>
+                  </div>
+                );
+              }
+
+              return filteredMovies.map((movie, idx) => (
+                <MovieCard 
+                  key={idx}
+                  id={movie.id}
+                  title={movie.title}
+                  year={movie.year}
+                  rating={movie.rating}
+                  image={movie.poster}
+                  genres={movie.genres}
+                  backdrop={movie.backdrop}
+                  synopsis={movie.synopsis}
+                />
+              ));
+            })()
           )}
         </div>
       </div>
     </div>
   );
 }
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={<div className="text-white/60 text-sm">Loading dashboard...</div>}
+    >
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+

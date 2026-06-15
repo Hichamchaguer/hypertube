@@ -6,8 +6,9 @@ import { Logo } from "../ui/Logo";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import api from "@/api/axios";
 
 interface NavbarProps {
   authenticated?: boolean;
@@ -15,7 +16,71 @@ interface NavbarProps {
 
 export const Navbar = ({ authenticated = false }: NavbarProps) => {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = React.useState(searchParams?.get("search") || "");
+  const [isAuth, setIsAuth] = React.useState(authenticated);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Check auth on client mount
+    const checkAuth = async () => {
+      if (authenticated) {
+        setIsAuth(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (localStorage.getItem("user")) {
+        setIsAuth(true);
+        setIsLoading(false);
+      } else {
+        try {
+          await api.get("/user");
+          setIsAuth(true);
+        } catch {
+          setIsAuth(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
+  }, [authenticated]);
+
+  React.useEffect(() => {
+    const q = searchParams?.get("search") || "";
+    if (q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
+
+  const handleSignOut = async () => {
+    try {
+      await api.post("/logout");
+    } catch(err) {
+      console.error("Logout failed", err);
+    }
+    localStorage.removeItem("user");
+    setIsAuth(false);
+    router.push("/signin");
+  };
+
+  React.useEffect(() => {
+    if (!isAuth) return;
+
+    // Only auto-search if on dashboard or if there's a search occurring
+    const timer = setTimeout(() => {
+      if (searchQuery.trim()) {
+        router.push(`/dashboard?search=${encodeURIComponent(searchQuery)}`);
+      } else if (searchQuery === "" && window.location.search.includes("search=")) {
+        // If cleared and was searching, go back to dashboard
+        router.push('/dashboard');
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isAuth, router]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,25 +89,34 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <nav className="w-full flex items-center justify-between py-6 px-8 transition-all duration-300 max-w-7xl mx-auto">
+        <Logo />
+        <div className="w-20" /> {/* Placeholder */}
+      </nav>
+    );
+  }
+
   return (
     <nav className={cn(
       "w-full flex items-center justify-between py-6 px-8 relative transition-all duration-300",
-      authenticated ? "bg-transparent" : "max-w-7xl mx-auto"
+      isAuth ? "bg-transparent" : "max-w-7xl mx-auto"
     )}>
       <Logo />
 
-      {!authenticated ? (
+      {!isAuth ? (
         <>
-          <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-6">
+          {/* <div className="absolute left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-6">
             <Link href="/" className="text-sm font-medium text-muted hover:text-white transition-colors">Home</Link>
             <Link href="/dashboard" className="text-sm font-medium text-muted hover:text-white transition-colors">Dashboard</Link>
             <Link href="/dashboard/history" className="text-sm font-medium text-muted hover:text-white transition-colors">History</Link>
             <Link href="/dashboard/library" className="text-sm font-medium text-muted hover:text-white transition-colors">Library</Link>
             <Link href="/dashboard/profile" className="text-sm font-medium text-muted hover:text-white transition-colors">Profile</Link>
-          </div>
+          </div> */}
           <div className="flex items-center gap-4">
-            <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Log In</Link>
-            <Link href="/signin">
+            <Link href="/signin" className="text-sm font-medium text-muted hover:text-white transition-colors px-4">Sign In</Link>
+            <Link href="/signup">
               <Button variant="primary" size="sm" className="px-6 rounded-lg font-bold">Sign Up</Button>
             </Link>
           </div>
@@ -58,12 +132,15 @@ export const Navbar = ({ authenticated = false }: NavbarProps) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-          <Link href="/">
-            <Button variant="primary" size="sm" className="bg-red-600/90 hover:bg-red-600 shadow-red-600/20 gap-2 shrink-0">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
-          </Link>
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="bg-red-600/90 hover:bg-red-600 shadow-red-600/20 gap-2 shrink-0 border-none"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </Button>
         </div>
       )}
     </nav>

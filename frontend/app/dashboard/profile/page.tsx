@@ -5,16 +5,32 @@ import { User, Mail, Camera, Save, Shield, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { fetchUser } from "@/api/services/getData";
+import { picture, tr } from "framer-motion/client";
 
 export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [profile, setProfile] = useState({
-    firstName: "Yassine",
-    lastName: "Hac",
-    username: "ybel-hac",
-    email: "yassine@hypertube.com"
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    profilePicture: "",
   });
+  console.log("Current profile state:", profile.profilePicture);
+  React.useEffect(() => {
+    const getUser = async () => {
+      try {
+        const userData = await fetchUser();
+        setProfile(userData);
+        console.log("Fetched user data:", userData.profilePicture);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    getUser();
+  }, []);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -40,9 +56,9 @@ export default function ProfilePage() {
           <div className="relative group">
             <div className="relative w-full aspect-square rounded-[2rem] overflow-hidden border-4 border-card/50 ring-1 ring-white/10 shadow-2xl">
               <Image 
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`} 
-                alt="Profile Avatar" 
-                fill 
+                src={profile.profilePicture || "/default-avatar.png"}
+                alt="user Avatar"
+                fill
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] cursor-pointer">
@@ -53,18 +69,7 @@ export default function ProfilePage() {
             </div>
             <div className="mt-4 text-center">
               <p className="text-xl font-bold text-white">{profile.username}</p>
-              <p className="text-sm text-muted">Member since April 2026</p>
             </div>
-          </div>
-          
-          <div className="p-6 bg-card/20 rounded-3xl border border-white/5 space-y-4">
-            <div className="flex items-center gap-3 text-white font-bold text-sm">
-                <Shield className="w-4 h-4 text-primary" />
-                Account Security
-            </div>
-            <p className="text-xs text-muted leading-relaxed">
-                Your account is currently secured with a strong password. We recommend updating it every few months.
-            </p>
           </div>
         </div>
 
@@ -88,13 +93,13 @@ export default function ProfilePage() {
                     label="First Name" 
                     value={profile.firstName} 
                     onChange={(e) => setProfile({...profile, firstName: e.target.value})}
-                    placeholder="Enter your first name"
+                    disabled={true}
                 />
                 <Input 
                     label="Last Name" 
                     value={profile.lastName} 
+                    disabled={true}
                     onChange={(e) => setProfile({...profile, lastName: e.target.value})}
-                    placeholder="Enter your last name"
                 />
             </div>
             
@@ -102,7 +107,7 @@ export default function ProfilePage() {
                 label="Username" 
                 value={profile.username} 
                 onChange={(e) => setProfile({...profile, username: e.target.value})}
-                placeholder="Enter your username"
+                disabled={true}
                 icon={<User className="w-4 h-4 text-muted" />}
             />
             
@@ -110,7 +115,7 @@ export default function ProfilePage() {
                 label="Email Address" 
                 value={profile.email} 
                 onChange={(e) => setProfile({...profile, email: e.target.value})}
-                placeholder="Enter your email"
+                disabled={true}
                 icon={<Mail className="w-4 h-4 text-muted" />}
             />
 
