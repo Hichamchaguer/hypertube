@@ -6,7 +6,7 @@ import axios, {
 
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002/api",
   timeout: 15_000,
   headers: {
     "Content-Type": "application/json",
